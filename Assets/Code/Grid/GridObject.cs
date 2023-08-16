@@ -25,11 +25,14 @@ public class GridObject : MonoBehaviour
     public void Fade()
     {
         _Image.DOFade(.3f, .3f);
-    }    
+    }
 
     public virtual void DoMove(GridTile tile, Action callback = null)
     {
-        CurrentPosition.IsOccupied = false;
+        if (CurrentPosition != null)
+        {
+            CurrentPosition.IsOccupied = false;
+        }
 
         transform.DOMove(tile.transform.position, 0.3f).OnComplete(() =>
         {

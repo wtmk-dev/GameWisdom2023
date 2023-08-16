@@ -13,12 +13,6 @@ public class GridPlayer : MonoBehaviour
     [SerializeField]
     private bool _IsLeftPlayer;
     [SerializeField]
-    private List<GridUnit> _Pool;
-    [SerializeField]
-    private GridUnit _Champion;
-    [SerializeField]
-    private GridBuilding _Base;
-    [SerializeField]
     private List<GridAction> _Actions;
     [SerializeField]
     private GameObject _ActionSelection;
@@ -68,8 +62,9 @@ public class GridPlayer : MonoBehaviour
         _TileMap = tileMap;
         _Ball = ball;
 
-        RegisterBallEvents();
+        //RegisterBallEvents();
 
+        /*
         _Champion.Life = 9;
         _Champion.CurrentPosition = champPos;
         _Champion.transform.position = champPos.transform.position;
@@ -89,6 +84,7 @@ public class GridPlayer : MonoBehaviour
             RegisterGridUnit(_Pool[i]);
             ResetGridUnit(_Pool[i]);
         }
+        */
 
         foreach(var tile in _TileMap)
         {
@@ -103,7 +99,7 @@ public class GridPlayer : MonoBehaviour
         bool hasActive = false;
         for(int i = 0; i < _UnitsOnGrid.Count; i++)
         {
-            if(_UnitsOnGrid[i].Clock <= turn)
+            //if(_UnitsOnGrid[i].Clock <= turn)
             {
                 hasActive = true;
                 break;
@@ -124,12 +120,12 @@ public class GridPlayer : MonoBehaviour
 
     private void Awake()
     {
-        _Base.IsLeftPlayer = _IsLeftPlayer;
-        _Champion.IsLeftPlayer = _IsLeftPlayer;
+        //_Base.IsLeftPlayer = _IsLeftPlayer;
+        //_Champion.IsLeftPlayer = _IsLeftPlayer;
 
-        for(int i = 0; i < _Pool.Count; i++)
+        //for(int i = 0; i < _Pool.Count; i++)
         {
-            _Pool[i].IsLeftPlayer = _IsLeftPlayer;
+            //_Pool[i].IsLeftPlayer = _IsLeftPlayer;
         }
 
         IsTurn = false;
@@ -165,14 +161,14 @@ public class GridPlayer : MonoBehaviour
         {
             if (_AvaliableMove != null && _AvaliableMove.Contains(tile))
             {
-                _SelectedUnit.Clock++;
+                //_SelectedUnit.Clock++;
                 _SelectedUnit.DoMove(tile, ResolveMove);
 
                 var from = _SelectedUnit.CurrentPosition;
                 _SelectedUnit.CurrentPosition = tile; //to
                 UpdateOccupied(tile, from);
 
-                _Base.RefreshGrid(_TileMap);
+                //_Base.RefreshGrid(_TileMap);
             }
         }
         if (_StateActionMap.CurrentState == TurnState.Deploy)
@@ -180,15 +176,15 @@ public class GridPlayer : MonoBehaviour
             if (_DeployZone.Contains(((int)tile.GridPosition.x, (int)tile.GridPosition.y)))
             {
                 HasDeployed = true;
-                _SelectedUnit.Clock = _CurrentClock + 1;
+              //  _SelectedUnit.Clock = _CurrentClock + 1;
                 _SelectedUnit.Life = 6;
 
-                _Pool.Remove(_SelectedUnit);
+                //_Pool.Remove(_SelectedUnit);
                 _UnitsOnGrid.Add(_SelectedUnit);
 
                 tile.IsOccupied = true;
 
-                _Base.RefreshGrid(_TileMap);
+                //_Base.RefreshGrid(_TileMap);
 
                 _SelectedUnit.CurrentPosition = tile;
                 _SelectedUnit.DoMove(tile, ResolveMove);
@@ -197,12 +193,12 @@ public class GridPlayer : MonoBehaviour
         if (_StateActionMap.CurrentState == TurnState.Throw)
         {
             Debug.Log("Throw ball");
-            _SelectedUnit.Clock += 2;
+            //_SelectedUnit.Clock += 2;
 
-            _Base.RefreshGrid(_TileMap);
+            //_Base.RefreshGrid(_TileMap);
             _CurrentDirection = _Ball.GetDirection(_SelectedUnit.CurrentPosition, tile);
 
-            _SelectedUnit.StartShotIndicator();
+            //_SelectedUnit.StartShotIndicator();
             _StateActionMap.StateChange(TurnState.Throwing);
         }
     }
@@ -255,7 +251,7 @@ public class GridPlayer : MonoBehaviour
                     return;
                 }
 
-                if (gridUnit.Clock <= _CurrentClock)
+                //if (gridUnit.Clock <= _CurrentClock)
                 {
                     _StateActionMap.StateChange(TurnState.ActionSelection);
                 }
@@ -295,17 +291,19 @@ public class GridPlayer : MonoBehaviour
 
     private void StateChange_Catch()
     {
-        _SelectedUnit.StartCatchIndicator();
+        //_SelectedUnit.StartCatchIndicator();
     }
 
     private void StateChange_Block()
     {
-        _SelectedUnit.StartBlockIndicator();
+        //_SelectedUnit.StartBlockIndicator();
     }
 
     private void HighlightTiles()
     {
         var avaliableMoves = new List<GridTile>();
+
+        /*
         var avaliblePositions = _Base.GridTiles(_SelectedUnit.CurrentPosition);
 
         for (int i = 0; i < avaliblePositions.Count; i++)
@@ -325,6 +323,7 @@ public class GridPlayer : MonoBehaviour
                 Debug.Log(knf.Message);
             }
         }
+        */
 
         _AvaliableMove = avaliableMoves;
 
@@ -349,12 +348,14 @@ public class GridPlayer : MonoBehaviour
 
     private void OnEnter_PickUp()
     {
+        /*
         _SelectedUnit.Clock++;
 
         _Ball.Fade();
         _SelectedUnit.PickUpBall();
 
         TranstionEndOrActive();
+        */
     }
 
     private void OnEnter_Move()
@@ -364,6 +365,7 @@ public class GridPlayer : MonoBehaviour
         var tile = _TileMap[key];
 
         var avaliableMoves = new List<GridTile>();
+        /*
         var avaliblePositions = _Base.GridTiles(tile);
 
         for (int i = 0; i < avaliblePositions.Count; i++)
@@ -383,6 +385,7 @@ public class GridPlayer : MonoBehaviour
                 Debug.Log(knf.Message);
             }
         }
+        */
 
         _AvaliableMove = avaliableMoves;
 
@@ -394,6 +397,7 @@ public class GridPlayer : MonoBehaviour
 
     private void OnEnter_Deploy()
     {
+        /*
         (int, int) key = ((int)_Base.CurrentPosition.GridPosition.x, (int)_Base.CurrentPosition.GridPosition.y);
         List<(int, int)> deployZone = new List<(int, int)>();
 
@@ -448,10 +452,12 @@ public class GridPlayer : MonoBehaviour
         }
 
         _DeployZone = deployZone;
+        */
     }
 
     private void OnEnter_ActionSelection()
     {
+        /*
         if(_UnitsOnGrid.Contains(_SelectedUnit))
         {
             Debug.Log("grid unit");
@@ -483,6 +489,7 @@ public class GridPlayer : MonoBehaviour
                 _Actions[0].Type = ActionType.Move;
             }
         }
+        */
     }
 
     private void OnEnter_Reaction()
@@ -491,7 +498,7 @@ public class GridPlayer : MonoBehaviour
 
         for(int i = 0; i < _UnitsOnGrid.Count; i++)
         {
-            if(_UnitsOnGrid[i].HasBall)
+            //if(_UnitsOnGrid[i].HasBall)
             {
                 possession = true;
                 break;
@@ -525,69 +532,11 @@ public class GridPlayer : MonoBehaviour
     }
     #endregion
 
-    #region BallEvents
-    private void BallEvent_ThrowSuccessful()
-    {
-        bool hasBall = false;
-        int index = 0;
-
-        for(int i = 0; i < _UnitsOnGrid.Count; i++)
-        {
-            if(_UnitsOnGrid[i].HasBall)
-            {
-                index = i;
-                hasBall = true;
-                break;
-            }
-        }
-
-        if(hasBall)
-        {
-            _UnitsOnGrid[index].DoMove(_Ball.CurrentPosition, ResolveThrow);
-        }
-    }
-
-    private void BallEvent_ThrowIntrup()
-    {
-        for(int i = 0; i < _UnitsOnGrid.Count; i++)
-        {
-            if(_UnitsOnGrid[i].CurrentPosition == _Ball.CurrentPosition)
-            {
-                _SelectedUnit = _UnitsOnGrid[i];
-                _StateActionMap.StateChange(TurnState.Reaction);
-            }
-        }
-    }
-    #endregion
-
-    private void ResolveThrow()
-    {
-        _StateActionMap.StateChange(TurnState.End);
-    }
-
     private void ResolveMove()
     {
         if (_CurrentState != TurnState.Deploy)
         {
             HasActivated = true;
-        }
-
-        if (!_SelectedUnit.HasBall)
-        {
-            if (_SelectedUnit.CurrentPosition == _Ball.CurrentPosition)
-            {
-                Debug.Log("Pick up ball");
-                _StateActionMap.StateChange(TurnState.ActionSelection);
-            }
-            else
-            {
-                TranstionEndOrActive();
-            }
-        }
-        else
-        {
-            OnMoveBallToUnit?.Invoke(_SelectedUnit);
-            TranstionEndOrActive();
         }
     }
 
@@ -603,119 +552,25 @@ public class GridPlayer : MonoBehaviour
         }
     }
 
-    private void RegisterBallEvents()
-    {
-        _Ball.OnThrowSuccessful += BallEvent_ThrowSuccessful;
-        _Ball.OnThrowIntrupt += BallEvent_ThrowIntrup;
-    }
-
     private void RegisterGridUnit(GridUnit gridUnit)
     {
         gridUnit.OnSelected += OnSelected_GridUnit;
-        gridUnit.OnShotComplete += OnShotComplete;
-        gridUnit.OnCatchComplete += OnCatchComplete;
-        gridUnit.OnBlockComplete += OnBlockComplete;
     }
 
     private void ShowDeoplyZone(GridUnit gridUnit)
     {
         if(!HasDeployed && IsTurn)
         {
-            if (_Pool.Contains(gridUnit))
+            //if (_Pool.Contains(gridUnit))
             {
                 _StateActionMap.StateChange(TurnState.Deploy);
             }
         }
     }
 
-    private void ResetGridUnit(GridUnit gridUnit)
-    {
-        gridUnit.Clock = 0;
-    }
-
     private void RegisterAction(GridAction action)
     {
         action.OnActionComplete += OnClick_Action;
-    }
-
-    private void OnShotComplete(float score)
-    {
-        Debug.Log("shot score " + score);
-
-        if (_CurrentState == TurnState.Throwing)
-        {
-            var shot = 0;
-
-            if (score > .45f && score < .55f)
-            {
-                Debug.Log("Perfect");
-                shot = 3;
-            }
-            else if (score > .35f && score < .45f) // green
-            {
-                shot = 2;
-            }
-            else if (score > .55f && score > .65f)// green
-            {
-                shot = 2;
-            }
-            else if (score > .15f && score < .35f) // black
-            {
-                shot = 1;
-            }
-            else if (score > .65f && score < .85f) // black
-            {
-                shot = 1;
-            }
-            else if (score > .85f && score < .95f) //blue
-            {
-                shot = 1;
-            }
-            else
-            {
-                shot = 1;
-            }
-
-            Debug.Log($"Throw ball in the {_CurrentDirection} with a score of {score} space to move {shot}");
-
-            _Ball.Throw(_CurrentDirection, shot);
-        }
-    }
-
-    private void OnCatchComplete(List<GridCatchResult> catchResults)
-    {
-        foreach(var res in catchResults)
-        {
-            Debug.Log(res.Location);
-        }
-    }
-
-    private void OnBlockComplete(List<GridBlockResult> blockResults)
-    {
-        int hit = 0;
-        foreach (var res in blockResults)
-        {
-            Debug.Log(res.Hit);
-            if(res.Hit == GridBlockHit.Hit)
-            {
-                hit++;
-            }
-        }
-
-        if (hit > 1)
-        {
-            OnEnter_BlockTileSelection();
-
-        }
-        else if (hit > 0)
-        {
-            OnBounceBall?.Invoke();
-
-        }
-        else
-        {
-            //block fail
-        }
     }
 }
 

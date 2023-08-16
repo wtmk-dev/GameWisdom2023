@@ -5,15 +5,16 @@ using UnityEngine;
 using UnityEngine.EventSystems;
 using Febucci.UI;
 
-public class GridUnit : GridObject , IPointerClickHandler
+public class GridUnit : GridObject, IPointerClickHandler
 {
     public event Action<GridUnit> OnSelected;
 
     [SerializeField]
     private TextAnimatorPlayer _LifeValue, _ClockValue;
+    private GridUnitStatus _StatusBar;
 
-    public BattleState BattleState { get; set; }
     public bool CanReady { get; set; }
+    public CombatModel CombatModel {get; set;}
         
     public int Life
     {
@@ -32,6 +33,7 @@ public class GridUnit : GridObject , IPointerClickHandler
 
     private int _Life;
     private ActiveTime _ActiveTime;
+    private CombatModel _ComatModel; 
 
     private void Awake()
     {

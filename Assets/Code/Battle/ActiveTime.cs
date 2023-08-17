@@ -7,7 +7,11 @@ public class ActiveTime
 {
     public void Update()
     {
-        _CombatModel.WaitTime += Time.deltaTime;
+        if(_CombatModel.BattleState == UnitBattleState.Waiting && 
+           _CombatModel.BattleState != UnitBattleState.Ready)
+        {
+            _CombatModel.WaitTime += Time.deltaTime;
+        }
 
         if (_CombatModel.WaitTime >= _CombatModel.ActiveTime)
         {
@@ -24,6 +28,7 @@ public class ActiveTime
     private void OnTimerComplete()
     {
         Debug.Log("Done");
+        _CombatModel.CanReady = true;
         _CombatModel.WaitTime = 0;
     }
 

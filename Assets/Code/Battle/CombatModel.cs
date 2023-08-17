@@ -5,6 +5,7 @@ public class CombatModel
 {
     public readonly float MAX_WAIT = 6f;
 
+    public bool CanReady { get; set; }
     public float WaitTime { get; set; }
     public float ActiveTime { get; set; }
     public float Speed  { get; set; }

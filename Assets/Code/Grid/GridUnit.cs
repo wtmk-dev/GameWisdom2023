@@ -14,8 +14,7 @@ public class GridUnit : GridObject, IPointerClickHandler
     private TextAnimatorPlayer _LifeValue, _ClockValue;
     [SerializeField]
     public Image _ATB;
-    
-    public bool CanReady { get; set; }
+
     public CombatModel CombatModel => _ComatModel;
     public GridUnitStatus StatusBar => _StatusBar;
 
@@ -49,6 +48,22 @@ public class GridUnit : GridObject, IPointerClickHandler
     private void Update()
     {
         _ActiveTime.Update();
-        _ATB.fillAmount = _ComatModel.WaitTime;
+
+        if(_ComatModel.CanReady)
+        {
+            if(_ComatModel.BattleState == UnitBattleState.Waiting)
+            {
+                _ATB.color = Color.cyan;
+                _ComatModel.CanReady = false;
+                _ComatModel.BattleState = UnitBattleState.Ready;
+            }
+        }
+        else
+        {
+            if (_ComatModel.BattleState == UnitBattleState.Waiting)
+            {
+                _ATB.fillAmount = _ComatModel.WaitTime;
+            }
+        }
     }
 }

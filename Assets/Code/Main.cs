@@ -10,6 +10,8 @@ public class Main : MonoBehaviour
     private GameObject _Unit_Prefab;
     [SerializeField]
     private GridUnitStatus _Target, _Player;
+    [SerializeField]
+    private UnitActionBar _ActionBar;
 
     void Awake()
     {
@@ -39,6 +41,20 @@ public class Main : MonoBehaviour
         if(CurrentGameScreen == Game)
         {
             _BattleSystem.Update();
+        }
+
+        if(Input.GetKey(KeyCode.Space))
+        {
+            _PC.CombatModel.BattleState = UnitBattleState.Waiting;
+        }
+
+        if(_PC.CombatModel.BattleState == UnitBattleState.Ready)
+        {
+            _ActionBar.gameObject.SetActive(true);
+        }
+        else
+        {
+            _ActionBar.gameObject.SetActive(false);
         }
     }
 

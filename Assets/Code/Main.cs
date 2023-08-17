@@ -20,8 +20,9 @@ public class Main : MonoBehaviour
     void Start()
     {
         var clone = Instantiate<GameObject>(_Unit_Prefab);
+
         _PC = clone.GetComponent<GridUnit>();
-        _PC.CombatModel = new CombatModel();
+        _PC.Init(100, 5f, _Player);
 
         _PC.OnSelected += OnPlayerSelected;
 
@@ -43,7 +44,7 @@ public class Main : MonoBehaviour
 
     private void OnPlayerSelected(GridUnit unit)
     {
-        Debug.Log("unit");
+        
     }
 
     private GridUnit _PC;

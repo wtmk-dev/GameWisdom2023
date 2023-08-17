@@ -9,6 +9,7 @@ public class Timer
 
     public virtual bool IsTicking { get; private set; }
     public virtual float RunTime { get; private set; }
+    public virtual float ElapsedMilliseconds => _Timer.ElapsedMilliseconds;
 
     public virtual void Update()
     {

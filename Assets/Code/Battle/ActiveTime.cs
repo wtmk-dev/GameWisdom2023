@@ -1,37 +1,31 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using UnityEngine;
 
 public class ActiveTime
 {
     public void Update()
     {
-        if(_Unit.CombatModel.BattleState == UnitBattleState.NotReady)
-        {
-            _Timer.OnTimerComplete += OnTimerComplete;
-        }
+        _CombatModel.WaitTime += Time.deltaTime;
 
-        if(_Unit.CombatModel.BattleState == UnitBattleState.Waiting)
+        if (_CombatModel.WaitTime >= _CombatModel.ActiveTime)
         {
-            if(!_Timer.IsTicking)
-            {
-                var activateTime = MAX_WAIT - _Unit.CombatModel.Speed;
-                _Timer.Start(activateTime);
-            }
+            OnTimerComplete();
         }
     }
 
-    public ActiveTime(GridUnit unit)
+    public ActiveTime(CombatModel model)
     {
-        _Unit = unit;
+        _CombatModel = model;
+        _CombatModel.ActiveTime = _CombatModel.MAX_WAIT - _CombatModel.SPEED_MAX;
     }
 
     private void OnTimerComplete()
     {
-        _Unit.CanReady = true;
+        Debug.Log("Done");
+        _CombatModel.WaitTime = 0;
     }
 
-    private GridUnit _Unit;
-    private Timer _Timer = new Timer();
-    private float MAX_WAIT = 3000;
+    private CombatModel _CombatModel;
 }

@@ -40,6 +40,13 @@ public class GridUnit : GridObject, IPointerClickHandler
         _StatusBar = stats;
     }
 
+    public void Skin()
+    {
+        _ComatModel = new CombatModel(5, 2);
+        _ActiveTime = new ActiveTime(_ComatModel);
+    }
+
+    //private UnitModel _Model;
     private int _Life;
     private ActiveTime _ActiveTime;
     private CombatModel _ComatModel;

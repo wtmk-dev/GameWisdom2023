@@ -3091,6 +3091,7 @@ GameObject:
   - component: {fileID: 1553168695}
   - component: {fileID: 1553168694}
   - component: {fileID: 1553168696}
+  - component: {fileID: 1553168697}
   m_Layer: 0
   m_Name: Main
   m_TagString: Untagged
@@ -3180,6 +3181,19 @@ MonoBehaviour:
   - {fileID: 2002552173}
   _Grid: {fileID: 1951780771}
   _GridCanvas: {fileID: 301023156}
+--- !u!114 &1553168697
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1553168693}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c889f64f9cc5930499b781485ffe9906, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _UnitPrefab: {fileID: 3968717944181688283, guid: 742453e3ab05c91449b87e855f80db35, type: 3}
 --- !u!1 &1728181843
 GameObject:
   m_ObjectHideFlags: 0

@@ -15,6 +15,7 @@ public class Main : MonoBehaviour
 
     void Awake()
     {
+        _UnitFactory = GetComponent<UnitFactory>();
         _Grid = GetComponent<WTMK.Mechanics.Grid>();
         _Grid.Init();
     }
@@ -33,7 +34,7 @@ public class Main : MonoBehaviour
         var key = (4, 1);
         _PC.DoMove(_Grid.Map[key]);
 
-        _BattleSystem = new BattleSystem(_Grid, _PC, _UnitFactory);
+        _BattleSystem = new BattleSystem(_PC, _Grid, _UnitFactory);
     }
 
     void Update()

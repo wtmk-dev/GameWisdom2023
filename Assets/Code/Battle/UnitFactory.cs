@@ -7,6 +7,7 @@ public class UnitFactory : MonoBehaviour
     public GridUnit CreateUnit()
     {
         var clone = Instantiate<GridUnit>(_UnitPrefab);
+        clone.Skin();
         return clone;
     }
 

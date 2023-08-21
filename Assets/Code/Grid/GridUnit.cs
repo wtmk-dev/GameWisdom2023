@@ -47,6 +47,7 @@ public class GridUnit : GridObject, IPointerClickHandler
     }
 
     //private UnitModel _Model;
+    
     private int _Life;
     private ActiveTime _ActiveTime;
     private CombatModel _ComatModel;
@@ -70,6 +71,10 @@ public class GridUnit : GridObject, IPointerClickHandler
             if (_ComatModel.BattleState == UnitBattleState.Waiting)
             {
                 _ATB.fillAmount = _ComatModel.WaitTime;
+            }
+            else if (_ComatModel.BattleState == UnitBattleState.Ready)
+            {
+
             }
         }
     }

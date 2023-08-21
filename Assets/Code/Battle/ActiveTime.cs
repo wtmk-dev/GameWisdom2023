@@ -27,9 +27,8 @@ public class ActiveTime
 
     private void OnTimerComplete()
     {
-        Debug.Log("Done");
-        _CombatModel.CanReady = true;
         _CombatModel.WaitTime = 0;
+        _CombatModel.CanReady = true;
     }
 
     private CombatModel _CombatModel;

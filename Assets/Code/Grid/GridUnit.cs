@@ -9,14 +9,20 @@ using Febucci.UI;
 public class GridUnit : GridObject, IPointerClickHandler
 {
     public event Action<GridUnit> OnSelected;
+    public event Action<UnitAction> OnQueueAction;
 
     [SerializeField]
     private TextAnimatorPlayer _LifeValue, _ClockValue;
     [SerializeField]
     public Image _ATB;
+    [SerializeField]
+    private List<Sprite> _HeroOptions;
+    [SerializeField]
+    private List<GameObject> _WepOptions;
 
     public CombatModel CombatModel => _ComatModel;
     public GridUnitStatus StatusBar => _StatusBar;
+
 
     public int Life
     {
@@ -28,6 +34,10 @@ public class GridUnit : GridObject, IPointerClickHandler
         }
     }
 
+    public bool IsInRange(Vector2 gridPosition, int range)
+    {
+        return true;
+    }
     public void OnPointerClick(PointerEventData pointerEventData)
     {
         OnSelected?.Invoke(this);
@@ -40,10 +50,15 @@ public class GridUnit : GridObject, IPointerClickHandler
         _StatusBar = stats;
     }
 
-    public void Skin()
+    public void Skin(CombatModel combatModel)
     {
-        _ComatModel = new CombatModel(5, 2);
+        _ComatModel = combatModel;
         _ActiveTime = new ActiveTime(_ComatModel);
+    }
+
+    public void QueueAction(UnitAction action)
+    {
+        OnQueueAction?.Invoke(action);
     }
 
     //private UnitModel _Model;
@@ -53,10 +68,8 @@ public class GridUnit : GridObject, IPointerClickHandler
     private CombatModel _ComatModel;
     private GridUnitStatus _StatusBar;
 
-    private void Update()
+    public void DoUpdate()
     {
-        _ActiveTime.Update();
-
         if(_ComatModel.CanReady)
         {
             if(_ComatModel.BattleState == UnitBattleState.Waiting)
@@ -64,12 +77,17 @@ public class GridUnit : GridObject, IPointerClickHandler
                 _ATB.color = Color.cyan;
                 _ComatModel.CanReady = false;
                 _ComatModel.BattleState = UnitBattleState.Ready;
+            }else if (_ComatModel.BattleState == UnitBattleState.ActionQueued)
+            {
+                _ComatModel.CanReady = false;
+                _ComatModel.BattleState = UnitBattleState.Waiting;
             }
         }
         else
         {
             if (_ComatModel.BattleState == UnitBattleState.Waiting)
             {
+                _ActiveTime.Update();
                 _ATB.fillAmount = _ComatModel.WaitTime;
             }
             else if (_ComatModel.BattleState == UnitBattleState.Ready)

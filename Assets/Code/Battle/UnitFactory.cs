@@ -4,18 +4,20 @@ using UnityEngine;
 
 public class UnitFactory : MonoBehaviour
 {
-    public GridUnit CreateUnit()
-    {
-        var clone = Instantiate<GridUnit>(_UnitPrefab);
-        clone.Skin();
-        return clone;
-    }
 
     [SerializeField]
     GridUnit _UnitPrefab;
 
-    public UnitFactory(GridUnit unitPrefab)
+    public GridUnit CreateUnit()
     {
-        _UnitPrefab = unitPrefab;
+        var clone = Instantiate<GridUnit>(_UnitPrefab);
+        var speed = _RNG.GetRandomInt(5);
+        var hp = _RNG.GetRandomInt(10);
+        var combatModel = new CombatModel(hp, speed);
+        clone.Skin(combatModel);
+        return clone;
     }
+
+
+    private RNG _RNG = new RNG();
 }

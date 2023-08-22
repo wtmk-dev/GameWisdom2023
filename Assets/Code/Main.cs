@@ -12,9 +12,12 @@ public class Main : MonoBehaviour
     private GridUnitStatus _Target, _Player;
     [SerializeField]
     private UnitActionBar _ActionBar;
-
+    [SerializeField]
+    private GameObject _Start, _Create, _Game, _Credits;
     void Awake()
     {
+        _StartScreen = _Start.GetComponent<StartScreen>();
+        _StartScreen.Start.onClick.AddListener(OnStartGame);
         _UnitFactory = GetComponent<UnitFactory>();
         _Grid = GetComponent<WTMK.Mechanics.Grid>();
         _Grid.Init();
@@ -35,6 +38,9 @@ public class Main : MonoBehaviour
         _PC.DoMove(_Grid.Map[key]);
 
         _BattleSystem = new BattleSystem(_PC, _Grid, _UnitFactory);
+
+        _StartScreen.gameObject.SetActive(true);
+        CurrentGameScreen = Init;
     }
 
     void Update()
@@ -43,20 +49,6 @@ public class Main : MonoBehaviour
         {
             _BattleSystem.Update();
         }
-
-        if(Input.GetKey(KeyCode.Space))
-        {
-            _PC.CombatModel.BattleState = UnitBattleState.Waiting;
-        }
-
-        if(_PC.CombatModel.BattleState == UnitBattleState.Ready)
-        {
-            _ActionBar.gameObject.SetActive(true);
-        }
-        else
-        {
-            _ActionBar.gameObject.SetActive(false);
-        }
     }
 
     private void OnPlayerSelected(GridUnit unit)
@@ -64,8 +56,17 @@ public class Main : MonoBehaviour
         
     }
 
+    private void OnStartGame()
+    {
+        _StartScreen.gameObject.SetActive(false);
+        _Create.gameObject.SetActive(true);
+
+        CurrentGameScreen = Create;
+    }
+
     private GridUnit _PC;
     private BattleSystem _BattleSystem;
     private UnitFactory _UnitFactory;
-    private int CurrentGameScreen = -1, Init = 0, Game = 1, Credits = 2;
+    private StartScreen _StartScreen;
+    private int CurrentGameScreen = -1, Init = 0, Game = 1, Create = 2, Credits = 3;
 }

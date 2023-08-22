@@ -31,11 +31,8 @@ public class GridAction : MonoBehaviour
 
 public enum ActionType
 {
+    Default,
     Move,
-    Catch,
-    Block,
-    PickUp,
-    Throw,
-    None
-
+    Attack,
+    Ability
 }

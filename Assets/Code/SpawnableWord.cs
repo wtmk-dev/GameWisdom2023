@@ -27,7 +27,7 @@ public class SpawnableWord : MonoBehaviour
         {
             var willActive = _RNG.GetRandomInt(9);
 
-            if (willActive < 5)
+            if (willActive < 3)
             {
                 StartTimer();
             }
@@ -39,7 +39,7 @@ public class SpawnableWord : MonoBehaviour
     private void OnTimerComplete()
     {
         var willActive = _RNG.GetRandomInt(9);
-        if(willActive < 5)
+        if(willActive < 3)
         {
             SetEffect();
         }
@@ -48,7 +48,7 @@ public class SpawnableWord : MonoBehaviour
             _TextAnimator.ShowText("");
         }
 
-        var delay = _RNG.GetRandomInt(1200);
+        var delay = _RNG.GetRandomInt(3600);
         _Timer.Start(delay);
     }
 
@@ -56,7 +56,7 @@ public class SpawnableWord : MonoBehaviour
     {
         var willActive = _RNG.GetRandomInt(9);
 
-        if(willActive < 5)
+        if(willActive < 3)
         {
             
             var roll = _RNG.GetRandomInt(PossibleWords.Count);

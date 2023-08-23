@@ -14,26 +14,48 @@ public class WordSpawner : MonoBehaviour
     [SerializeField]
     private int _WordsToSpawn;
 
+    private IEnumerator _Coroutine;
+
     private void Awake()
     {
-        while(_WordsToSpawn > 0)
+        while(_SpawnPoints.Count > 0)
         {
-            _WordsToSpawn--;
             var clone = Instantiate<SpawnableWord>(_Word_Prefab);
             clone.transform.SetParent(_Canvas.transform);
-            
-            var roll = _RNG.GetRandomInt(_SpawnPoints.Count);
-            var spawnPoint = _SpawnPoints[roll];
+            var spawnPoint = _SpawnPoints[0];
 
             clone.transform.localPosition = spawnPoint.localPosition;
             clone.gameObject.SetActive(false);
+
             _Words.Add(clone);
+            _SpawnPoints.RemoveAt(0);
         }
     }
 
-    private void Start()
+    public void StartSpawn()
     {
-        StartCoroutine(StartWords());
+        if(_Coroutine != null)
+        {
+            StopCoroutine(_Coroutine);
+            _Coroutine = null;
+        }
+
+        _Coroutine = StartWords();
+        StartCoroutine(_Coroutine);
+    }
+
+    public void StopSpawn()
+    {
+        if(_Coroutine != null)
+        {
+            StopCoroutine(_Coroutine);
+            _Coroutine = null;
+        }
+        
+        for (int i = 0; i < _Words.Count; i++)
+        {
+            _Words[i].gameObject.SetActive(false);
+        }
     }
 
     private IEnumerator StartWords()
@@ -41,11 +63,10 @@ public class WordSpawner : MonoBehaviour
         for (int i = 0; i < _Words.Count; i++)
         {
             var words = _Words[i];
-            var roll = _RNG.GetRandomInt(9);
 
             words.gameObject.SetActive(true);
+            yield return new WaitForSeconds(0.3f);
             words.Init();
-            yield return new WaitForSeconds(.6f);
         }
     }
 

@@ -19,6 +19,10 @@ public class GridUnit : GridObject, IPointerClickHandler
     private List<Sprite> _HeroOptions;
     [SerializeField]
     private List<GameObject> _WepOptions;
+    [SerializeField]
+    private GameObject _Wep;
+    [SerializeField]
+    private Image _Sprite;
 
     public CombatModel CombatModel => _ComatModel;
     public GridUnitStatus StatusBar => _StatusBar;
@@ -32,6 +36,12 @@ public class GridUnit : GridObject, IPointerClickHandler
             _Life = value;
             _LifeValue.ShowText($"{_Life}");
         }
+    }
+
+    public void Default()
+    {
+        _Wep.gameObject.SetActive(true);
+        _Sprite.material = null;
     }
 
     public bool IsInRange(Vector2 gridPosition, int range)

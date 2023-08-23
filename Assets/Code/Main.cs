@@ -17,6 +17,8 @@ public class Main : MonoBehaviour
     void Awake()
     {
         _StartScreen = _Start.GetComponent<StartScreen>();
+        _CreateScreen = _Create.GetComponent<CreateScreen>();
+
         _StartScreen.Start.onClick.AddListener(OnStartGame);
         _UnitFactory = GetComponent<UnitFactory>();
         _Grid = GetComponent<WTMK.Mechanics.Grid>();
@@ -62,11 +64,14 @@ public class Main : MonoBehaviour
         _Create.gameObject.SetActive(true);
 
         CurrentGameScreen = Create;
+
+        _CreateScreen.StartTransition();
     }
 
     private GridUnit _PC;
     private BattleSystem _BattleSystem;
     private UnitFactory _UnitFactory;
     private StartScreen _StartScreen;
+    private CreateScreen _CreateScreen;
     private int CurrentGameScreen = -1, Init = 0, Game = 1, Create = 2, Credits = 3;
 }

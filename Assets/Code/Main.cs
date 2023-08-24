@@ -20,8 +20,6 @@ public class Main : MonoBehaviour
         _CreateScreen = _Create.GetComponent<CreateScreen>();
         _GameScreen = _Game.GetComponent<GameScreen>();
 
-        _CreateScreen.OnCharacterCreated += CharacterCreated;
-
         _StartScreen.Start.onClick.AddListener(OnStartGame);
         _UnitFactory = GetComponent<UnitFactory>();
         _Grid = GetComponent<WTMK.Mechanics.Grid>();
@@ -54,6 +52,13 @@ public class Main : MonoBehaviour
         {
             _BattleSystem.Update();
         }
+
+        if(_CreateScreen.TransitionReady)
+        {
+            _CreateScreen.TransitionReady = false;
+            _Create.SetActive(false);
+            TransitionGame();
+        }
     }
 
     private void OnPlayerSelected(GridUnit unit)
@@ -65,12 +70,11 @@ public class Main : MonoBehaviour
     {
         _StartScreen.gameObject.SetActive(false);
         TranstionCreate();
-        //TransitionGame();
     }
 
     private void TransitionGame()
     {
-        _Game.gameObject.SetActive(true);
+        _Game.SetActive(true);
         CurrentGameScreen = Game;
         _GameScreen.StartTransition(_PC, _BattleSystem);
     }
@@ -79,12 +83,7 @@ public class Main : MonoBehaviour
     {
         _Create.gameObject.SetActive(true);
         CurrentGameScreen = Create;
-        _CreateScreen.StartTransition();
-    }
-
-    private void CharacterCreated(CharacterCreationResult resluts)
-    { 
-        
+        _CreateScreen.StartTransition(_PC);
     }
 
     private GridUnit _PC;

@@ -13,7 +13,7 @@ public class UnitFactory : MonoBehaviour
         var clone = Instantiate<GridUnit>(_UnitPrefab);
         var speed = _RNG.GetRandomInt(5);
         var hp = _RNG.GetRandomInt(10);
-        var combatModel = new CombatModel(hp, speed);
+        var combatModel = new CombatModel(hp, speed, 0, 0);
         clone.Skin(combatModel);
         return clone;
     }

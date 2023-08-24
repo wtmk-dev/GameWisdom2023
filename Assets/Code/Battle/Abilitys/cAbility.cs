@@ -27,16 +27,21 @@ public enum PassiveType
     Disciplined,
 }
 
-public enum OnHitType
+public enum CounterType
 {
     Dodge,
+}
+
+public enum ActivateWhenReadyType
+{
+    Vengance
 }
 
 public class AbilityFactory
 {
     public Ability GetAbility(AbilityType type)
     {
-        switch(type)
+        switch (type)
         {
             case AbilityType.BasicAttack:
                 return new Ability("Attack", 1, 1);
@@ -87,7 +92,7 @@ public class AbilityFactory
                 return new Ability("Rune Of Wisdom", 0, 0);
 
             default:
-                return new Ability("Attack", 1, 1); 
+                return new Ability("Attack", 1, 1);
         }
     }
 
@@ -109,22 +114,41 @@ public class AbilityFactory
         }
     }
 
-    public OnHit GetOnHot(OnHitType type)
+    public Counter GetCounter(CounterType type)
     {
-        switch(type)
+        switch (type)
         {
-            case OnHitType.Dodge:
-                return new OnHit();
+            case CounterType.Dodge:
+                return new Counter();
             default:
-                return new OnHit();
+                return new Counter();
+        }
+    }
+
+
+    public ActivateWhenReady GetActivateWhenReady(ActivateWhenReadyType type)
+    {
+        switch (type)
+        {
+            case ActivateWhenReadyType.Vengance:
+                return new ActivateWhenReady();
+            default:
+                return new ActivateWhenReady();
         }
     }
 }
 
-public class OnHit
+
+public class Counter
 {
 
 }
+
+public class ActivateWhenReady
+{
+
+}
+
 
 public class Passive
 {
@@ -160,9 +184,11 @@ public class Ability
 }
 
 
+
+
 public class KillSkellyRestorHp : Ability
 {
-    public KillSkellyRestorHp(string name, int range, int attack) : base(name,range,attack)
+    public KillSkellyRestorHp(string name, int range, int attack) : base(name, range, attack)
     {
 
     }
@@ -177,24 +203,5 @@ public class KillSkellyRestorHp : Ability
             target.CombatModel.CurrentHp = 0;
         }
     }
-}
-
-public class VengeanceResilence : ActivateWhenReady
-{
-
-    public void Apply(GridUnit unit)
-    {
-        //unit.CombatModel.Attack += 1;
-        int heal = (int)Math.Floor(unit.CombatModel.HP_MAX * .2);
-        unit.Heal(heal);
-    }
-}
-
-
-
-
-public interface ActivateWhenReady
-{
-    public void Apply(GridUnit unit);
 }
 

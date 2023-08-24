@@ -6,30 +6,16 @@ using DG.Tweening;
 using UnityEngine.UI;
 using Febucci.UI;
 
-public class CharacterCreationResult
-{
-    public string ProfileText;
-    public int CharacterChoice;
-    public CombatModel CombatModel;
-
-    public CharacterCreationResult()
-    {
-        CombatModel = new CombatModel(0,0,0,0);
-    }
-
-    public List<ActivateWhenReady> Buffs;
-    public List<Ability> Abilities;
-}
-
 public class CreateScreen : MonoBehaviour
 {
+    public bool TransitionReady = false;
     public TextAnimatorPlayer Title, StoryText, Profile;
     public WordSpawner WordSpawner;
     public GameObject Effect, CharacterSelection, Effect2;
     public List<Button> Selections;
     public List<TextAnimatorPlayer> SelectionText;
     public Image BackgroundEffect;
-    public GridUnit _War, _Thif, _Mage;
+    public GridUnit _War, _Thif, _Mage, _Necro;
     public Transform SelectedPosition;
 
     private void Awake()
@@ -71,7 +57,7 @@ public class CreateScreen : MonoBehaviour
 
     public void StartTransition(GridUnit unit)
     {
-        _Character = new CharacterCreationResult();
+        _Player = unit;
 
         Title.ShowText("{horiexp}<shake>Will the pain stop?</shake>{/horiexp}");        
         BackgroundEffect.DOFade(0f, 6f).SetEase(Ease.InOutBounce).OnComplete(() =>
@@ -80,7 +66,7 @@ public class CreateScreen : MonoBehaviour
         });
     }
 
-    private CharacterCreationResult _Character;
+    private GridUnit _Player;
     private IEnumerator DoTransition()
     {
         Title.ShowText("{horiexp}<pend>You wouldn't want it to.</pend>{/horiexp}");
@@ -99,10 +85,18 @@ public class CreateScreen : MonoBehaviour
         Title.ShowText("{rdir}<incr>REMEMBER!?</incr>{/rdir}");
     }
 
+    bool hasSelected;
+    GridUnit t = null;
     private void OnClassSelected(int selection)
     {
+        if(hasSelected)
+        {
+            return;
+        }
+
+        hasSelected = true;
+
         string c = "";
-        GridUnit t = null;
 
         if (selection == 0)
         {
@@ -111,6 +105,10 @@ public class CreateScreen : MonoBehaviour
 
             t = _War;
             c = "WARRIOR";
+
+            _Player.SetAbility(_AbilityFactory.GetAbility(AbilityType.Block));
+            _Player.SetAbility(_AbilityFactory.GetAbility(AbilityType.WhirlWind));
+            _Player.SetAbility(_AbilityFactory.GetAbility(AbilityType.Sword));
         }
 
         if (selection == 1)
@@ -120,6 +118,10 @@ public class CreateScreen : MonoBehaviour
 
             t = _Thif;
             c = "THIEF";
+
+            _Player.SetAbility(_AbilityFactory.GetAbility(AbilityType.TrickAttack));
+            _Player.SetCounter(_AbilityFactory.GetCounter(CounterType.Dodge));
+            _Player.SetAbility(_AbilityFactory.GetAbility(AbilityType.Dagger));
         }
 
         if (selection == 2)
@@ -129,6 +131,10 @@ public class CreateScreen : MonoBehaviour
 
             t = _Mage;
             c = "MAGE";
+
+            _Player.SetAbility(_AbilityFactory.GetAbility(AbilityType.FireBall));
+            _Player.SetAbility(_AbilityFactory.GetAbility(AbilityType.Teleport));
+            _Player.SetAbility(_AbilityFactory.GetAbility(AbilityType.Staff));
         }
 
         StoryText.ShowText("{diagexp}<bounce>The past beckons, and you are drawn into the depths of their memories, " +
@@ -149,7 +155,7 @@ public class CreateScreen : MonoBehaviour
 
     private IEnumerator DoStartStory()
     {
-        yield return new WaitForSeconds(18f);
+        yield return new WaitForSeconds(12f);
         _CreationStep.StateChange(CreationStep.Background);
     }
 
@@ -175,16 +181,21 @@ public class CreateScreen : MonoBehaviour
             if (option == 0)
             {
                 _ProfileString += Noble_Ancestry;
+                _Player.SetAbility(_AbilityFactory.GetAbility(AbilityType.Potion));
+                _Player.SetPassive(_AbilityFactory.GetPassive(PassiveType.Noble));
                 
             } else if (option == 1)
             {
                 _ProfileString += Orphaned_Existence;
+                _Player.SetPassive(_AbilityFactory.GetPassive(PassiveType.Orphan));
             }
             else if (option == 2)
             {
                 _ProfileString += Disciplined_Pursuit;
+                _Player.SetPassive(_AbilityFactory.GetPassive(PassiveType.Disciplined));
             }
 
+            WordSpawner.StopSpawn();
             StartCoroutine(TransitionState(CreationStep.CallToAction));
         }
 
@@ -207,15 +218,17 @@ public class CreateScreen : MonoBehaviour
                 _ProfileString += HungryForKnowlage;
             }
 
+            Effect2.SetActive(false);
+            t.Default(option);
             StartCoroutine(TransitionState(CreationStep.Enemy));
         }
 
         if (_CreationStep.CurrentState == CreationStep.Enemy)
         {
             ToggleSelection(false);
-
             _ProfileString += "\n" + Enemy;
 
+            _Necro.gameObject.SetActive(false);
             StartCoroutine(TransitionState(CreationStep.Trials));
         }
 
@@ -224,10 +237,10 @@ public class CreateScreen : MonoBehaviour
 
             if(_Trials == 0)
             {
-
-                _Character.Buffs.Add(new VengeanceResilence());
-                
-            }else if (_Trials == 1)
+                var vengace = _AbilityFactory.GetActivateWhenReady(ActivateWhenReadyType.Vengance);
+                _Player.SetActivateWhenReady(vengace);
+            }
+            else if (_Trials == 1)
             {
                 AddTomb(option);
             }
@@ -269,8 +282,7 @@ public class CreateScreen : MonoBehaviour
                 _ProfileString += Become;
             }
 
-            _Character.ProfileText = _ProfileString;
-            OnCharacterCreated?.Invoke(_Character);
+            TransitionReady = true;
         }
     }
 
@@ -278,20 +290,31 @@ public class CreateScreen : MonoBehaviour
     {
         if(option == 0)
         {
-           // _Character.Abilities.Add(); 
+            _Player.SetAbility(_AbilityFactory.GetAbility(AbilityType.Soulshatter));
         }else if(option == 1)
         {
-            //_Character.Abilities.Add()
+            _Player.SetAbility(_AbilityFactory.GetAbility(AbilityType.Shadows));
         }
         else if (option == 2)
         {
-            //_Character.Abilities.Add()
+            _Player.SetAbility(_AbilityFactory.GetAbility(AbilityType.Hex));
         }
     }
 
     private void AddRune(int option)
     {
-
+        if (option == 0)
+        {
+            _Player.SetAbility(_AbilityFactory.GetAbility(AbilityType.RuneOfPower));
+        }
+        else if (option == 1)
+        {
+            _Player.SetAbility(_AbilityFactory.GetAbility(AbilityType.RuneOfCourage));
+        }
+        else if (option == 2)
+        {
+            _Player.SetAbility(_AbilityFactory.GetAbility(AbilityType.RuneOfWisdom));
+        }
     }
 
     private IEnumerator TransitionState(CreationStep state)
@@ -337,9 +360,10 @@ public class CreateScreen : MonoBehaviour
     private void OnEnter_Enemy()
     {
         Title.ShowText("{fade} YOUR ENEMY {fade}");
-        StoryText.ShowText("From the depths emerges your nemesis, veiled in enigma. An entity unknown, their identity a riddle, a mirror to your own journey. What darkness calls forth your opposing force?");
+        StoryText.ShowText("{fade}From the depths emerges your nemesis, veiled in enigma. An entity unknown, their identity a riddle, a mirror to your own journey. What darkness calls forth your opposing force?");
 
         ToggleSelection(true);
+        _Necro.gameObject.SetActive(true);
 
         SelectionText[0].ShowText("Sinister Necromancer");
         SelectionText[1].ShowText("Sinister Necromancer");
@@ -398,10 +422,10 @@ public class CreateScreen : MonoBehaviour
 
     private IEnumerator SequenceRoadToHellText()
     {
-        StoryText.ShowText("With the echoes of your journey converging, you stand at the crossroads of destiny, poised on the precipice of the necromancer's castle—the final battlefield of your relentless pursuit. Yet, before the clash that will shape fate's tapestry, you encounter a blind seer whose gaze pierces the veil of reality.Their fingers bestow upon you an amulet—the Twin Phoenix Amulet—relic of a land untamed by the shackles of reality, where echoes of power and eternity intertwine. 'The amulet's heart beats with the rhythm of duality, ' the seer murmurs, 'twins in unity, fire and ash, life and death.");
-        yield return new WaitForSeconds(3.1f);
-        StoryText.ShowText("The amulet's weight is more than mere gold and gems—it carries the weight of ancient prophecies and forgotten truths. As your fingers touch its cool surface, you feel the heartbeat of two souls, twining like serpents of power. The seer's words linger, hinting at its connection to the looming battle and your own fate. Armed with the amulet's enigmatic power, you set forth, stepping into the shadow of the necromancer's castle, where reality and nightmares merge—a testament to the trials you've conquered and the choices that have shaped you.");
-        yield return new WaitForSeconds(3.1f);
+        StoryText.ShowText("{fade}With the echoes of your journey converging, you stand at the crossroads of destiny, poised on the precipice of the necromancer's castle—the final battlefield of your relentless pursuit. Yet, before the clash that will shape fate's tapestry, you encounter a blind seer whose gaze pierces the veil of reality.Their fingers bestow upon you an amulet—the Twin Phoenix Amulet—relic of a land untamed by the shackles of reality, where echoes of power and eternity intertwine. 'The amulet's heart beats with the rhythm of duality, ' the seer murmurs, 'twins in unity, fire and ash, life and death.");
+        yield return new WaitForSeconds(24f);
+        StoryText.ShowText("{fade}The amulet's weight is more than mere gold and gems—it carries the weight of ancient prophecies and forgotten truths. As your fingers touch its cool surface, you feel the heartbeat of two souls, twining like serpents of power. The seer's words linger, hinting at its connection to the looming battle and your own fate. Armed with the amulet's enigmatic power, you set forth, stepping into the shadow of the necromancer's castle, where reality and nightmares merge—a testament to the trials you've conquered and the choices that have shaped you.");
+        yield return new WaitForSeconds(24f);
         _CreationStep.StateChange(CreationStep.DeathOfAHero);
     }
 
@@ -413,13 +437,13 @@ public class CreateScreen : MonoBehaviour
 
     private IEnumerator SequenceDeathOfAHero()
     {
-        StoryText.ShowText("Stepping into the crypt's shadows, you venture deeper—a lone figure embracing destiny's call. The air grows heavy with the scent of ancient dust and the palpable tension of your purpose. Each step carries the weight of battles fought, choices made, and the ghosts of companions lost along the way. The echoes of your past resonate like the final notes of a symphony as you navigate the crypt's twists and turns, drawn ever closer to the heart of darkness.");
-        yield return new WaitForSeconds(4.1f);
-        StoryText.ShowText("Torches flicker like fading stars, guiding you through the crypt's labyrinthine corridors. Unearthly whispers and the distant echoes of your own heartbeats create an eerie melody that accompanies your descent. At last, the crypt yields to a grand chamber—a nexus of arcane energy, cloaked in a shroud of ethereal mist. There, amidst a symphony of shadows, stands the necromancer, their power palpable, their intentions dark.");
-        yield return new WaitForSeconds(6.1f);
-        StoryText.ShowText("The clash ensues—a dance of blades, incantations, and eldritch forces that reshape reality. With each strike, the necromancer's power and mastery over death become more evident. Yet, your resolve remains unbroken. As the battle rages on, the necromancer's dark magic begins to sap your strength. Wounds accumulate, and your movements grow sluggish. In the heart of the battle, the Twin Phoenix Amulet's ethereal glow intensifies, resonating with the rhythm of your struggle.");
-        yield return new WaitForSeconds(6.1f);
-        StoryText.ShowText("As the weight of the amulet presses against your chest, an enigmatic power awakens within—the very power the blind seer spoke of. The amulet, a conduit between life and death, pulses with an energy you've never felt before. Its resonance mingles with your heartbeat, weaving a symphony that harmonizes with your very soul.");
+        StoryText.ShowText("{fade}Stepping into the crypt's shadows, you venture deeper—a lone figure embracing destiny's call. The air grows heavy with the scent of ancient dust and the palpable tension of your purpose. Each step carries the weight of battles fought, choices made, and the ghosts of companions lost along the way. The echoes of your past resonate like the final notes of a symphony as you navigate the crypt's twists and turns, drawn ever closer to the heart of darkness.");
+        yield return new WaitForSeconds(22f);
+        StoryText.ShowText("{fade}Torches flicker like fading stars, guiding you through the crypt's labyrinthine corridors. Unearthly whispers and the distant echoes of your own heartbeats create an eerie melody that accompanies your descent. At last, the crypt yields to a grand chamber—a nexus of arcane energy, cloaked in a shroud of ethereal mist. There, amidst a symphony of shadows, stands the necromancer, their power palpable, their intentions dark.");
+        yield return new WaitForSeconds(24f);
+        StoryText.ShowText("{fade}The clash ensues—a dance of blades, incantations, and eldritch forces that reshape reality. With each strike, the necromancer's power and mastery over death become more evident. Yet, your resolve remains unbroken. As the battle rages on, the necromancer's dark magic begins to sap your strength. Wounds accumulate, and your movements grow sluggish. In the heart of the battle, the Twin Phoenix Amulet's ethereal glow intensifies, resonating with the rhythm of your struggle.");
+        yield return new WaitForSeconds(24f);
+        StoryText.ShowText("{fade}As the weight of the amulet presses against your chest, an enigmatic power awakens within—the very power the blind seer spoke of. The amulet, a conduit between life and death, pulses with an energy you've never felt before. Its resonance mingles with your heartbeat, weaving a symphony that harmonizes with your very soul.");
 
         ToggleSelection(true);
 

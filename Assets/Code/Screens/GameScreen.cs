@@ -6,9 +6,12 @@ public class GameScreen : MonoBehaviour
 {
     [SerializeField]
     private UnitActionBar _ActionBar;
+    [SerializeField]
+    private GameObject _CombatGrid;
 
     public void StartTransition(GridUnit player, BattleSystem battleSystem)
     {
+        _CombatGrid.SetActive(true);
         _Player = player;
         _Player.SetActionBar(_ActionBar);
         _BattleSystem = battleSystem;

@@ -55,6 +55,16 @@ public class GridUnit : GridObject, IPointerClickHandler
         _Abilities.Add(ability);
     }
 
+    public void SetPassive(Passive passive)
+    {
+        _Passive.Add(passive);
+    }
+
+    public void SetCounter(Counter counter)
+    {
+        _Coutner.Add(counter);
+    }
+
     public void Heal(int value)
     {
         _ComatModel.CurrentHp += value;
@@ -65,9 +75,16 @@ public class GridUnit : GridObject, IPointerClickHandler
         }
     }
 
-    public void Default()
+    public void Default(int option)
     {
         _Wep.gameObject.SetActive(true);
+
+        for (int i = 0; i < _WepOptions.Count; i++)
+        {
+            _WepOptions[i].SetActive(false);
+        }
+
+        _WepOptions[option].gameObject.SetActive(true);
         _Sprite.material = null;
     }
 
@@ -82,7 +99,7 @@ public class GridUnit : GridObject, IPointerClickHandler
 
     public void Init(int hp, float speed, GridUnitStatus stats)
     {
-        _ComatModel = new CombatModel(hp, speed);
+        _ComatModel = new CombatModel(hp, speed, 0,0);
         _ActiveTime = new ActiveTime(_ComatModel);
         _StatusBar = stats;
     }
@@ -98,14 +115,14 @@ public class GridUnit : GridObject, IPointerClickHandler
         OnQueueAction?.Invoke(action);
     }
 
-    //private UnitModel _Model;
-    
     private int _Life;
     private ActiveTime _ActiveTime;
     private CombatModel _ComatModel;
     private GridUnitStatus _StatusBar;
     private List<ActivateWhenReady> _ActivateWhenReady = new List<ActivateWhenReady>();
     private List<Ability> _Abilities = new List<Ability>();
+    private List<Passive> _Passive = new List<Passive>();
+    private List<Counter> _Coutner = new List<Counter>();
     private UnitActionBar _ActionBar;
 
     public void DoUpdate()
@@ -120,10 +137,8 @@ public class GridUnit : GridObject, IPointerClickHandler
 
                 for (int i = 0; i < _ActivateWhenReady.Count; i++)
                 {
-                    _ActivateWhenReady[i].Apply(this);
+                    Debug.Log("TO DO ACTIVATE WHEN READY");
                 }
-
-                Debug.Log(CombatModel.Attack);
 
             }else if (_ComatModel.BattleState == UnitBattleState.ActionQueued)
             {

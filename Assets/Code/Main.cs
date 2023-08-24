@@ -18,6 +18,9 @@ public class Main : MonoBehaviour
     {
         _StartScreen = _Start.GetComponent<StartScreen>();
         _CreateScreen = _Create.GetComponent<CreateScreen>();
+        _GameScreen = _Game.GetComponent<GameScreen>();
+
+        _CreateScreen.OnCharacterCreated += CharacterCreated;
 
         _StartScreen.Start.onClick.AddListener(OnStartGame);
         _UnitFactory = GetComponent<UnitFactory>();
@@ -38,10 +41,10 @@ public class Main : MonoBehaviour
 
         var key = (4, 1);
         _PC.DoMove(_Grid.Map[key]);
-
         _BattleSystem = new BattleSystem(_PC, _Grid, _UnitFactory);
 
         _StartScreen.gameObject.SetActive(true);
+
         CurrentGameScreen = Init;
     }
 
@@ -61,16 +64,33 @@ public class Main : MonoBehaviour
     private void OnStartGame()
     {
         _StartScreen.gameObject.SetActive(false);
+        TranstionCreate();
+        //TransitionGame();
+    }
+
+    private void TransitionGame()
+    {
+        _Game.gameObject.SetActive(true);
+        CurrentGameScreen = Game;
+        _GameScreen.StartTransition(_PC, _BattleSystem);
+    }
+
+    private void TranstionCreate()
+    {
         _Create.gameObject.SetActive(true);
-
         CurrentGameScreen = Create;
-
         _CreateScreen.StartTransition();
+    }
+
+    private void CharacterCreated(CharacterCreationResult resluts)
+    { 
+        
     }
 
     private GridUnit _PC;
     private BattleSystem _BattleSystem;
     private UnitFactory _UnitFactory;
+    private GameScreen _GameScreen;
     private StartScreen _StartScreen;
     private CreateScreen _CreateScreen;
     private int CurrentGameScreen = -1, Init = 0, Game = 1, Create = 2, Credits = 3;

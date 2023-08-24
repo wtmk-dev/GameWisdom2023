@@ -27,6 +27,8 @@ public class GridUnit : GridObject, IPointerClickHandler
     public CombatModel CombatModel => _ComatModel;
     public GridUnitStatus StatusBar => _StatusBar;
 
+    public List<ActivateWhenReady> ActivateWhenReady => _ActivateWhenReady;
+    public List<Ability> Abilities => _Abilities;
 
     public int Life
     {
@@ -35,6 +37,31 @@ public class GridUnit : GridObject, IPointerClickHandler
         {
             _Life = value;
             _LifeValue.ShowText($"{_Life}");
+        }
+    }
+
+    public void SetActionBar(UnitActionBar actionBar)
+    {
+        _ActionBar = actionBar;
+    }
+
+    public void SetActivateWhenReady(ActivateWhenReady awr)
+    {
+        _ActivateWhenReady.Add(awr);
+    }
+
+    public void SetAbility(Ability ability)
+    {
+        _Abilities.Add(ability);
+    }
+
+    public void Heal(int value)
+    {
+        _ComatModel.CurrentHp += value;
+
+        if(_ComatModel.CurrentHp > _ComatModel.HP_MAX)
+        {
+            _ComatModel.CurrentHp = _ComatModel.HP_MAX;
         }
     }
 
@@ -77,6 +104,9 @@ public class GridUnit : GridObject, IPointerClickHandler
     private ActiveTime _ActiveTime;
     private CombatModel _ComatModel;
     private GridUnitStatus _StatusBar;
+    private List<ActivateWhenReady> _ActivateWhenReady = new List<ActivateWhenReady>();
+    private List<Ability> _Abilities = new List<Ability>();
+    private UnitActionBar _ActionBar;
 
     public void DoUpdate()
     {
@@ -87,6 +117,14 @@ public class GridUnit : GridObject, IPointerClickHandler
                 _ATB.color = Color.cyan;
                 _ComatModel.CanReady = false;
                 _ComatModel.BattleState = UnitBattleState.Ready;
+
+                for (int i = 0; i < _ActivateWhenReady.Count; i++)
+                {
+                    _ActivateWhenReady[i].Apply(this);
+                }
+
+                Debug.Log(CombatModel.Attack);
+
             }else if (_ComatModel.BattleState == UnitBattleState.ActionQueued)
             {
                 _ComatModel.CanReady = false;
@@ -102,7 +140,10 @@ public class GridUnit : GridObject, IPointerClickHandler
             }
             else if (_ComatModel.BattleState == UnitBattleState.Ready)
             {
-
+                if(_ActionBar != null)
+                {
+                    _ActionBar.SetActive(true);
+                }
             }
         }
     }

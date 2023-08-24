@@ -27,10 +27,9 @@ public class BattleSystem
         _BattleState.RegisterEnter(BattleState.Start, OnEnter_Start);
         _BattleState.RegisterEnter(BattleState.ExcuteAction, OnEnter_ExcuteAction);
         _BattleState.RegisterEnter(BattleState.Resolve, OnEnter_Resolve);
-
         _BattleState.RegisterEnter(BattleState.Default, OnEnter_Default);
 
-        _BattleState.RegisterUpdate(BattleState.Updating, OnUpdate_Update); //lol
+        _BattleState.RegisterUpdate(BattleState.Updating, OnUpdate_Update);
 
         _BattleState.StateChange(BattleState.Init);
     }
@@ -47,6 +46,7 @@ public class BattleSystem
                 _Grid.SetOnGrid(enemy, tile);
                 var ai = new UnitAI(enemy, _Player, _Grid);
                 _ActiveUnit.Add(ai);
+                enemy.gameObject.SetActive(false);
             }
         }
 
@@ -92,14 +92,12 @@ public class BattleSystem
 
         _BattleState.StateChange(BattleState.Resolve);
     }
-
     private void OnEnter_Resolve()
     {
         Debug.Log("OnEnter_Resolve");
 
         _BattleState.StateChange(BattleState.Updating);
     }
-
     private void OnUpdate_Update()
     {
         if (_ActionQueue.Count > 0)
@@ -112,6 +110,8 @@ public class BattleSystem
             {
                 _ActiveUnit[i].Update();
             }
+
+            _Player.DoUpdate();
         }
     }
 
@@ -139,4 +139,11 @@ public enum UnitBattleState
     Ready,
     Waiting,
     ActionQueued
+}
+
+
+public enum UnitType
+{
+    Default,
+    Skelly
 }

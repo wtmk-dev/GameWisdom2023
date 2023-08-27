@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using DG.Tweening;
 
 public class Main : MonoBehaviour
 {
@@ -13,12 +14,16 @@ public class Main : MonoBehaviour
     [SerializeField]
     private UnitActionBar _ActionBar;
     [SerializeField]
-    private GameObject _Start, _Create, _Game, _Credits;
+    private GameObject _Start, _Create, _Game, _Credits, _Tutorial;
+    [SerializeField]
+    private GridUnit _PC;
+
     void Awake()
     {
         _StartScreen = _Start.GetComponent<StartScreen>();
         _CreateScreen = _Create.GetComponent<CreateScreen>();
         _GameScreen = _Game.GetComponent<GameScreen>();
+        _TutorialScreen = _Tutorial.GetComponent<TutorialScreen>();
 
         _StartScreen.Start.onClick.AddListener(OnStartGame);
         _UnitFactory = GetComponent<UnitFactory>();
@@ -28,22 +33,33 @@ public class Main : MonoBehaviour
 
     void Start()
     {
-        var clone = Instantiate<GameObject>(_Unit_Prefab);
-
-        _PC = clone.GetComponent<GridUnit>();
         _PC.Init(100, 5f, _Player);
-
-        _PC.OnSelected += OnPlayerSelected;
-
         _Grid.SetPC(_PC);
+        StartCoroutine(SequenceBuild());
+    }
 
+    private IEnumerator SequenceBuild()
+    {        
+        
         var key = (4, 1);
-        _PC.DoMove(_Grid.Map[key]);
-        _BattleSystem = new BattleSystem(_PC, _Grid, _UnitFactory);
+        _PC.DoMove(_Grid.Map[key],()=> 
+        {
+            _BattleSystem = new BattleSystem(_PC, _Grid, _UnitFactory, _TutorialScreen);
 
-        _StartScreen.gameObject.SetActive(true);
+            _StartScreen.gameObject.SetActive(true);
 
-        CurrentGameScreen = Init;
+            CurrentGameScreen = Init;
+
+            _CreateScreen.Init();
+
+            _Create.SetActive(false);
+            _Credits.SetActive(false);
+            _Tutorial.SetActive(false);
+
+        });
+
+        yield return new WaitForEndOfFrame();
+
     }
 
     void Update()
@@ -76,6 +92,8 @@ public class Main : MonoBehaviour
     {
         _Game.SetActive(true);
         CurrentGameScreen = Game;
+        _PC.Body.sprite = _CreateScreen.t.Body.sprite;
+        _PC.Default(_CreateScreen.t.Option);
         _GameScreen.StartTransition(_PC, _BattleSystem);
     }
 
@@ -86,11 +104,11 @@ public class Main : MonoBehaviour
         _CreateScreen.StartTransition(_PC);
     }
 
-    private GridUnit _PC;
     private BattleSystem _BattleSystem;
     private UnitFactory _UnitFactory;
     private GameScreen _GameScreen;
     private StartScreen _StartScreen;
     private CreateScreen _CreateScreen;
+    private TutorialScreen _TutorialScreen;
     private int CurrentGameScreen = -1, Init = 0, Game = 1, Create = 2, Credits = 3;
 }

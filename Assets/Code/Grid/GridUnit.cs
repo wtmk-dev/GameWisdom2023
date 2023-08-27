@@ -23,12 +23,19 @@ public class GridUnit : GridObject, IPointerClickHandler
     private GameObject _Wep;
     [SerializeField]
     private Image _Sprite;
+    [SerializeField]
+    private Sprite _Necro;
 
     public CombatModel CombatModel => _ComatModel;
     public GridUnitStatus StatusBar => _StatusBar;
 
     public List<ActivateWhenReady> ActivateWhenReady => _ActivateWhenReady;
     public List<Ability> Abilities => _Abilities;
+    public Move Move { get; set; }
+    public Image Body => _Sprite;
+    public int Option;
+
+    public UnitActionBar ActionBar => _ActionBar;
 
     public int Life
     {
@@ -64,6 +71,27 @@ public class GridUnit : GridObject, IPointerClickHandler
     {
         _Coutner.Add(counter);
     }
+    
+    public void SetBoss(bool isBoss)
+    {
+        StartCoroutine(DoSetBoss(isBoss));
+    }
+
+    IEnumerator DoSetBoss(bool isBoss)
+    {
+        yield return new WaitForEndOfFrame();
+        if (isBoss)
+        {
+            _Sprite.sprite = _Necro;
+            _WepOptions[2].SetActive(true);
+        }
+        else
+        {
+            _WepOptions[0].SetActive(true);
+        }
+    }
+
+    private RNG _RNG = new RNG();
 
     public void Heal(int value)
     {
@@ -77,6 +105,8 @@ public class GridUnit : GridObject, IPointerClickHandler
 
     public void Default(int option)
     {
+        Option = option;
+
         _Wep.gameObject.SetActive(true);
 
         for (int i = 0; i < _WepOptions.Count; i++)
@@ -86,6 +116,8 @@ public class GridUnit : GridObject, IPointerClickHandler
 
         _WepOptions[option].gameObject.SetActive(true);
         _Sprite.material = null;
+
+        gameObject.SetActive(false);
     }
 
     public bool IsInRange(Vector2 gridPosition, int range)
@@ -137,7 +169,7 @@ public class GridUnit : GridObject, IPointerClickHandler
 
                 for (int i = 0; i < _ActivateWhenReady.Count; i++)
                 {
-                    Debug.Log("TO DO ACTIVATE WHEN READY");
+                    Debug.LogWarning("TO DO ACTIVATE WHEN READY");
                 }
 
             }else if (_ComatModel.BattleState == UnitBattleState.ActionQueued)
@@ -158,6 +190,13 @@ public class GridUnit : GridObject, IPointerClickHandler
                 if(_ActionBar != null)
                 {
                     _ActionBar.SetActive(true);
+                }
+            }else if (_ComatModel.BattleState == UnitBattleState.ActionQueued)
+            {
+
+                if (_ActionBar != null)
+                {
+                    _ActionBar.SetActive(false);
                 }
             }
         }

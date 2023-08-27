@@ -17,5 +17,6 @@ public class UnitActionArgs
     public ActionType Type;
     public GridUnit Target;
     public GridUnit Actor;
+    public GridTile SelectedTile;
 }
 

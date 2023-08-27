@@ -16,7 +16,8 @@ public class GameScreen : MonoBehaviour
         _Player.SetActionBar(_ActionBar);
         _BattleSystem = battleSystem;
         _ActionBar.Init(player.Abilities);
-        _BattleSystem.Start();
+        _Player.Move = new Move("Move", 1, 0);
+        _BattleSystem.Start(_ActionBar);
     }
 
     private GridUnit _Player;

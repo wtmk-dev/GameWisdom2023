@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -8,6 +9,7 @@ namespace WTMK.Mechanics
 {
     public class Grid : MonoBehaviour
     {
+        public event Action<GridTile> TileSelected;
         public Dictionary<(int, int), GridTile> Map => _GridMap;
 
         [SerializeField]
@@ -16,6 +18,23 @@ namespace WTMK.Mechanics
         private GameObject _Grid;
         [SerializeField]
         private GameObject _GridCanvas;
+
+        public List<GridUnit> Units;
+
+        public List<GridTile> GetAdjacentTiles(GridTile tile)
+        {
+            var tiles = new List<GridTile>();
+
+            for (int i = 0; i < _GridTiles.Count; i++)
+            {
+                if(_GridTiles[i].IsAdjacent(tile))
+                {
+                    tiles.Add(_GridTiles[i]);
+                }
+            }
+
+            return tiles;
+        }
 
         public GridTile GetRandomTilePos()
         {
@@ -36,6 +55,11 @@ namespace WTMK.Mechanics
             unit.gameObject.SetActive(true);
             unit.transform.SetParent(_GridCanvas.transform);
             unit.DoMove(location);
+        }
+
+        public void SetActive(bool isActive)
+        {
+            _GridCanvas.SetActive(isActive);
         }
 
         public void Init()
@@ -59,6 +83,7 @@ namespace WTMK.Mechanics
         private void OnTileSelected(GridTile sender)
         {
             Debug.Log($"Clicked Tile ({sender.GridPosition.x} , {sender.GridPosition.y} ");
+            TileSelected?.Invoke(sender);
         }
 
         private Dictionary<(int, int), GridTile> _GridMap = new Dictionary<(int, int), GridTile>();

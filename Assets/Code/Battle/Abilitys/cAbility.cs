@@ -166,7 +166,7 @@ public class Ability
     public int Attack => _Damage;
     public int Range => _Range;
 
-    public virtual void Execute(GridUnit caster, GridUnit target)
+    public virtual void Execute(UnitActionArgs args)
     {
 
     }
@@ -183,24 +183,18 @@ public class Ability
     protected string _Name;
 }
 
-
-
-
-public class KillSkellyRestorHp : Ability
+public class Move : Ability
 {
-    public KillSkellyRestorHp(string name, int range, int attack) : base(name, range, attack)
+    public Move(string name, int range, int attack) : base(name, range, attack)
     {
 
     }
 
-    public override void Execute(GridUnit caster, GridUnit target)
+    public override void Execute(UnitActionArgs args)
     {
-        if (target.CombatModel.UnitType == UnitType.Skelly)
+        if(!args.SelectedTile.IsOccupied)
         {
-            var heal = target.CombatModel.CurrentHp;
-            caster.Heal(heal);
-
-            target.CombatModel.CurrentHp = 0;
+            args.Actor.DoMove(args.SelectedTile);
         }
     }
 }

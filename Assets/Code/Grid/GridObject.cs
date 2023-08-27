@@ -35,10 +35,11 @@ public class GridObject : MonoBehaviour
         }
 
         tile.IsOccupied = true;
+        CurrentPosition = tile;
 
-        transform.DOMove(tile.transform.position, 0.3f).OnComplete(() =>
+        transform.DOLocalMove(tile.transform.localPosition, 0.3f).OnComplete(() =>
         {
-            CurrentPosition = tile;
+            
             CurrentPosition.IsOccupied = true;
 
             if (callback != null)

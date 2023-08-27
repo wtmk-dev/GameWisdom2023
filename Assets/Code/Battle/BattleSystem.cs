@@ -12,18 +12,25 @@ public class BattleSystem
         _BattleState.DoUpdate();
     }
 
-    public void Start()
+    public void Start(UnitActionBar actionBar)
     {
-        _BattleState.StateChange(BattleState.Start);
+        _ActionBar = actionBar;
+        _ActionBar.OnAbilitySelected += AbilitySelected;
+        _BattleState.StateChange(BattleState.Tutorial);
     }
 
-    public BattleSystem(GridUnit pc, eff.Grid grid, UnitFactory factory)
+    public BattleSystem(GridUnit pc, eff.Grid grid, UnitFactory factory, TutorialScreen tutorialScreen)
     {
         _Player = pc;
         _Grid = grid;
         _Factory = factory;
+
+        _TutorialScreen = tutorialScreen;
+        _TutorialScreen.Confirm.onClick.AddListener(TutorialCompleted);
+
         _BattleState = new StateActionMap<BattleState>();
         _BattleState.RegisterEnter(BattleState.Init, OnEnter_Init);
+        _BattleState.RegisterEnter(BattleState.Tutorial, OnEnter_Tutorial);
         _BattleState.RegisterEnter(BattleState.Start, OnEnter_Start);
         _BattleState.RegisterEnter(BattleState.ExcuteAction, OnEnter_ExcuteAction);
         _BattleState.RegisterEnter(BattleState.Resolve, OnEnter_Resolve);
@@ -31,27 +38,65 @@ public class BattleSystem
 
         _BattleState.RegisterUpdate(BattleState.Updating, OnUpdate_Update);
 
-        _BattleState.StateChange(BattleState.Init);
+        _BattleState.StateChange(BattleState.Init);    
+    }
+
+    private void TutorialCompleted()
+    {
+        _TutorialScreen.gameObject.SetActive(false);
+        _BattleState.StateChange(BattleState.Start);
     }
 
     private void OnEnter_Init()
     {
-        while(_ActiveUnit.Count < 30)
+        int count = 0;
+
+        while(count < _Grid.Units.Count)
         {
-            var enemy = _Factory.CreateUnit();
-            RegisterUnitEvents(enemy);
             var tile = _Grid.GetRandomTilePos();
             if (!tile.IsOccupied)
             {
+                var enemy = _Grid.Units[count];
+                _Factory.CreateUnit(enemy);
+                RegisterUnitEvents(enemy);
                 _Grid.SetOnGrid(enemy, tile);
                 var ai = new UnitAI(enemy, _Player, _Grid);
+                ai.OnQueueMove += QueueMove;
                 _ActiveUnit.Add(ai);
-                enemy.gameObject.SetActive(false);
+                count++;
             }
         }
 
+        _Grid.TileSelected += OnTileSelected;
+        _ActiveUnit[0].IsBoss = true;
         RegisterUnitEvents(_Player);
         _BattleState.StateChange(BattleState.Default);
+    }
+
+    private void OnTileSelected(GridTile tile)
+    {
+        if(_Player.CombatModel.BattleState == UnitBattleState.Ready)
+        {
+            if(!tile.IsOccupied && tile.IsAdjacent(_Player.CurrentPosition))
+            {
+                _Player.CombatModel.BattleState = UnitBattleState.ActionQueued;
+
+                QueueMove(_Player, tile);
+            }
+        }
+    }
+
+    public void QueueMove(GridUnit unit, GridTile tile)
+    {
+        var args = new UnitActionArgs();
+        args.Actor = unit;
+        args.SelectedTile = tile;
+
+        var moveAction = new UnitAction();
+        moveAction.Args = args;
+        moveAction.Action = _Player.Move.Execute;
+
+        _ActionQueue.Enqueue(moveAction);
     }
 
     private void RegisterUnitEvents(GridUnit unit)
@@ -66,21 +111,30 @@ public class BattleSystem
 
     private void OnEnter_Default()
     {
-        Debug.Log("Default");
+        _Grid.SetActive(false);
     }
+
+    private void OnEnter_Tutorial()
+    {
+        _Grid.SetActive(true);
+        _TutorialScreen.gameObject.SetActive(true);
+    }
+
     private void OnEnter_Start()
     {
-        Debug.Log("Start");
+        //_TutorialScreen.gameObject.SetActive(false);
 
         for (int i = 0; i < _ActiveUnit.Count; i++)
         {
             _ActiveUnit[i].StartBattle();
         }
 
+        _Player.gameObject.SetActive(true);
         _Player.CombatModel.BattleState = UnitBattleState.Waiting;
 
         _BattleState.StateChange(BattleState.Updating);
     }
+
     private void OnEnter_ExcuteAction()
     {
         Debug.Log("OnEnter_ExcuteAction");
@@ -92,12 +146,14 @@ public class BattleSystem
 
         _BattleState.StateChange(BattleState.Resolve);
     }
+
     private void OnEnter_Resolve()
     {
         Debug.Log("OnEnter_Resolve");
 
         _BattleState.StateChange(BattleState.Updating);
     }
+    
     private void OnUpdate_Update()
     {
         if (_ActionQueue.Count > 0)
@@ -111,21 +167,33 @@ public class BattleSystem
                 _ActiveUnit[i].Update();
             }
 
-            _Player.DoUpdate();
+            if(_Player != null)
+            {
+                _Player.DoUpdate();
+            }
         }
     }
 
+    private void AbilitySelected(Ability ability)
+    {
+        Debug.Log(ability.Name);
+    }
+
+    private UnitActionBar _ActionBar;
     private Queue<UnitAction> _ActionQueue = new Queue<UnitAction>();
     private List<UnitAI> _ActiveUnit = new List<UnitAI>();
     private GridUnit _Player;
     private eff.Grid _Grid;
     private UnitFactory _Factory;
+
+    private TutorialScreen _TutorialScreen;
 }
 
 public enum BattleState
 {
     Default,
     Init,
+    Tutorial,
     Start,
     Updating,
     ExcuteAction,

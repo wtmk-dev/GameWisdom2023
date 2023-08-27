@@ -1,9 +1,12 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
 public class UnitActionBar : MonoBehaviour
 {
+    public event Action<Ability> OnAbilitySelected;
+
     [SerializeField]
     private GameObject Action_Prefab;
 
@@ -34,7 +37,7 @@ public class UnitActionBar : MonoBehaviour
 
     public void ActionSelected(Ability ability)
     {
-        Debug.Log(ability.Name);
+        OnAbilitySelected?.Invoke(ability);
     }
 
     private List<ActionBarButton> _Actions = new List<ActionBarButton>();

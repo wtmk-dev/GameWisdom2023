@@ -25,6 +25,57 @@ public class GridTile : MonoBehaviour, IPointerClickHandler
     {
         OnClick?.Invoke(this);
     }
+    public bool IsCloser(GridTile current, GridTile tileX, GridTile tileY)
+    {
+        int distanceToX = CalculateDistance(current, tileX);
+        int distanceToY = CalculateDistance(current, tileY);
+
+        return distanceToX < distanceToY;
+    }
+
+    public int CalculateDistance(GridTile current, GridTile gridTile)
+    {
+        int deltaX = (int)Math.Abs(current.GridPosition.x - gridTile.GridPosition.x);
+        int deltaY = (int)Math.Abs(current.GridPosition.y - gridTile.GridPosition.y);
+
+        int diagonalMoves = Math.Min(deltaX, deltaY);
+        int straightMoves = Math.Abs(deltaX - deltaY);
+        int totalMoves = diagonalMoves * 2 + straightMoves;
+
+        return totalMoves;
+    }
+
+    public int CalculateDistance(GridTile gridTile)
+    {
+        int deltaX = (int)Math.Abs(_GridPosition.x - gridTile.GridPosition.x);
+        int deltaY = (int)Math.Abs(_GridPosition.y - gridTile.GridPosition.y);
+
+        int diagonalMoves = Math.Min(deltaX, deltaY);
+        int straightMoves = Math.Abs(deltaX - deltaY);
+        int totalMoves = diagonalMoves * 2 + straightMoves;
+
+        return totalMoves;
+    }
+
+    public bool IsAdjacent(GridTile gridTile)
+    {
+        int deltaX = (int)Math.Abs(_GridPosition.x - gridTile.GridPosition.x);
+        int deltaY = (int)Math.Abs(_GridPosition.y - gridTile.GridPosition.y);
+
+        return deltaX <= 1 && deltaY <= 1 && (deltaX + deltaY) != 0 && deltaX != deltaY;
+    }
+
+    public bool IsInRange(GridTile gridTile, int range)
+    {
+        int deltaX = (int)Math.Abs(_GridPosition.x - gridTile.GridPosition.x);
+        int deltaY = (int)Math.Abs(_GridPosition.y - gridTile.GridPosition.y);
+
+        int diagonalMoves = Math.Min(deltaX, deltaY);
+        int straightMoves = Math.Abs(deltaX - deltaY);
+        int totalMoves = diagonalMoves * 2 + straightMoves;
+
+        return totalMoves <= range;
+    }
 
     private void Awake()
     {

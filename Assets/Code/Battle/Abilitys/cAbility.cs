@@ -66,7 +66,7 @@ public class AbilityFactory
                 return new Heal("Cure", 0, 10);
 
             case AbilityType.TrickAttack:
-                return new Ability("Trick Attack", 5, 5);
+                return new Attack("Trick Attack", 5, 5);
 
             case AbilityType.Block:
                 return new Heal("Block", 0, 5);

@@ -17,6 +17,8 @@ public class Main : MonoBehaviour
     private GameObject _Start, _Create, _Game, _Credits, _Tutorial;
     [SerializeField]
     private GridUnit _PC;
+    [SerializeField]
+    private StatusBar _StatusBar;
 
     void Awake()
     {
@@ -44,7 +46,7 @@ public class Main : MonoBehaviour
         var key = (4, 1);
         _PC.DoMove(_Grid.Map[key],()=> 
         {
-            _BattleSystem = new BattleSystem(_PC, _Grid, _UnitFactory, _TutorialScreen);
+            _BattleSystem = new BattleSystem(_PC, _Grid, _UnitFactory, _TutorialScreen, _StatusBar);
 
             _StartScreen.gameObject.SetActive(true);
 
@@ -54,8 +56,6 @@ public class Main : MonoBehaviour
 
             _Create.SetActive(false);
             _Credits.SetActive(false);
-            _Tutorial.SetActive(false);
-
         });
 
         yield return new WaitForEndOfFrame();

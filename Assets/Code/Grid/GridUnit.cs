@@ -5,14 +5,16 @@ using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.EventSystems;
 using Febucci.UI;
+using DG.Tweening;
 
 public class GridUnit : GridObject, IPointerClickHandler
 {
     public event Action<GridUnit> OnSelected;
     public event Action<UnitAction> OnQueueAction;
+    public event Action<GridUnit> OnKilled;
 
     [SerializeField]
-    private TextAnimatorPlayer _LifeValue, _ClockValue;
+    private TextAnimatorPlayer _LifeValue, _AttackValue;
     [SerializeField]
     public Image _ATB;
     [SerializeField]
@@ -20,11 +22,11 @@ public class GridUnit : GridObject, IPointerClickHandler
     [SerializeField]
     private List<GameObject> _WepOptions;
     [SerializeField]
-    private GameObject _Wep;
+    private GameObject _Wep, _goLife, _goAtk;
     [SerializeField]
     private Image _Sprite;
     [SerializeField]
-    private Sprite _Necro;
+    private Sprite _Necro, _Soul, _DeadSkelly, _AliveSkelly;
 
     public CombatModel CombatModel => _ComatModel;
     public GridUnitStatus StatusBar => _StatusBar;
@@ -36,16 +38,6 @@ public class GridUnit : GridObject, IPointerClickHandler
     public int Option;
 
     public UnitActionBar ActionBar => _ActionBar;
-
-    public int Life
-    {
-        get => _Life;
-        set
-        {
-            _Life = value;
-            _LifeValue.ShowText($"{_Life}");
-        }
-    }
 
     public void SetActionBar(UnitActionBar actionBar)
     {
@@ -71,9 +63,62 @@ public class GridUnit : GridObject, IPointerClickHandler
     {
         _Coutner.Add(counter);
     }
+
+    public AliveState AliveState { get; set; }
+
+    public void Rez()
+    {
+        _ComatModel.CurrentHp = _ComatModel.HP_MAX;
+        AliveState = AliveState.Default;
+        _Sprite.sprite = _AliveSkelly;
+        ShowAliveItems();
+    }
+
+    public void DropSoul()
+    {
+        AliveState = AliveState.Soul;
+        _Sprite.sprite = _Soul;
+        HideAliveItems();
+    }
+
+    public void Kill(bool cleanBody = true)
+    {
+        AliveState = AliveState.Dead;
+        _Sprite.sprite = _DeadSkelly;
+        HideAliveItems();
+
+        if(cleanBody)
+        {
+            StartCoroutine(CleanBody());
+        }
+    }
+
+    private IEnumerator CleanBody()
+    {
+        yield return new WaitForSeconds(1.2f);
+        CurrentPosition.IsOccupied = false;
+    }
+
+    private void HideAliveItems()
+    {
+        _goLife.gameObject.SetActive(false);
+        _ATB.gameObject.SetActive(false);
+        _goAtk.gameObject.SetActive(false);
+        _Wep.gameObject.SetActive(false);
+    }
+
+    private void ShowAliveItems()
+    {
+        _goLife.gameObject.SetActive(true);
+        _ATB.gameObject.SetActive(true);
+        _goAtk.gameObject.SetActive(true);
+        _Wep.gameObject.SetActive(true);
+    }
     
+    public bool IsBoss { get; set; }
     public void SetBoss(bool isBoss)
     {
+        IsBoss = isBoss;
         StartCoroutine(DoSetBoss(isBoss));
     }
 
@@ -89,9 +134,30 @@ public class GridUnit : GridObject, IPointerClickHandler
         {
             _WepOptions[0].SetActive(true);
         }
+
+        UpdateValues();
     }
 
-    private RNG _RNG = new RNG();
+    public void Damage(int value)
+    {
+        _ComatModel.CurrentHp -= value;
+
+        if (_ComatModel.CurrentHp > _ComatModel.HP_MAX)
+        {
+            _ComatModel.CurrentHp = _ComatModel.HP_MAX;
+        }
+    }
+
+    public void UpdateValues()
+    {
+        if(CombatModel == null)
+        {
+            return;
+        }
+
+        _LifeValue.ShowText(CombatModel.CurrentHp + "");
+        _AttackValue.ShowText(CombatModel.Attack + "");
+    }
 
     public void Heal(int value)
     {
@@ -117,13 +183,10 @@ public class GridUnit : GridObject, IPointerClickHandler
         _WepOptions[option].gameObject.SetActive(true);
         _Sprite.material = null;
 
+        UpdateValues();
         gameObject.SetActive(false);
     }
-
-    public bool IsInRange(Vector2 gridPosition, int range)
-    {
-        return true;
-    }
+    
     public void OnPointerClick(PointerEventData pointerEventData)
     {
         OnSelected?.Invoke(this);
@@ -147,7 +210,6 @@ public class GridUnit : GridObject, IPointerClickHandler
         OnQueueAction?.Invoke(action);
     }
 
-    private int _Life;
     private ActiveTime _ActiveTime;
     private CombatModel _ComatModel;
     private GridUnitStatus _StatusBar;
@@ -155,7 +217,25 @@ public class GridUnit : GridObject, IPointerClickHandler
     private List<Ability> _Abilities = new List<Ability>();
     private List<Passive> _Passive = new List<Passive>();
     private List<Counter> _Coutner = new List<Counter>();
+
+    private RNG _RNG = new RNG();
     private UnitActionBar _ActionBar;
+
+    public void DoAttack(GridUnit unit, int value)
+    {
+        unit.Damage(value);
+        transform.DOLocalMove(unit.transform.localPosition, 0.3f).OnComplete(()=> 
+        {
+            transform.DOLocalMove(CurrentPosition.transform.localPosition, 0.3f);
+            unit.transform.DOPunchRotation(Vector2.left, 0.3f);
+        });
+    }
+
+    public void DoHeal(GridUnit unit, int value)
+    {
+        unit.Heal(value);
+        unit.transform.DOShakePosition(0.6f);
+    }
 
     public void DoUpdate()
     {
@@ -185,20 +265,48 @@ public class GridUnit : GridObject, IPointerClickHandler
                 _ActiveTime.Update();
                 _ATB.fillAmount = _ComatModel.WaitTime;
             }
-            else if (_ComatModel.BattleState == UnitBattleState.Ready)
-            {
-                if(_ActionBar != null)
-                {
-                    _ActionBar.SetActive(true);
-                }
-            }else if (_ComatModel.BattleState == UnitBattleState.ActionQueued)
-            {
+        }
 
-                if (_ActionBar != null)
-                {
-                    _ActionBar.SetActive(false);
-                }
+        if (CombatModel.CurrentHp <= 0)
+        {
+            if (AliveState == AliveState.Default)
+            {
+                AliveState = AliveState.PendingDeath;
+                OnKilled?.Invoke(this);
+            }else if(AliveState == AliveState.PendingDeath && IsBoss)
+            {
+                OnKilled?.Invoke(this);
             }
         }
+
+        if (_ActionBar == null)
+        {
+            return;
+        }
+
+        if (_ComatModel.BattleState == UnitBattleState.SelectingAction || _ComatModel.BattleState == UnitBattleState.Ready)
+        {
+            if(_ComatModel.BattleState == UnitBattleState.SelectingAction)
+            {
+                _ActionBar.SelectingAction();
+            }
+            else
+            {
+                _ActionBar.Unselect();
+            }
+        }
+        else
+        {
+            _ActionBar.SetActive(false);
+            
+        }
     }
+}
+
+public enum AliveState
+{
+    Default,
+    PendingDeath,
+    Dead,
+    Soul
 }

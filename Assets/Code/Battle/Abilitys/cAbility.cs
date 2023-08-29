@@ -44,34 +44,35 @@ public class AbilityFactory
         switch (type)
         {
             case AbilityType.BasicAttack:
-                return new Ability("Attack", 1, 1);
+                return new Attack("Attack", 1, 1);
 
             case AbilityType.Sword:
-                return new Ability("Sword", 1, 5);
+                return new Attack("Sword", 1, 5);
 
             case AbilityType.Dagger:
-                return new Ability("Dagger", 1, 5);
+                return new Attack("Daggers", 1, 3);
 
             case AbilityType.Staff:
-                return new Ability("Staff", 2, 5);
+                return new Attack("Staff", 2, 2);
 
             case AbilityType.Potion:
-                return new Ability("Red Potion", 1, -5);
+                var potion = new Heal("Red Potion", 0, 25);
+                return potion;
 
             case AbilityType.FireBall:
-                return new Ability("FireBall", 0, 0);
+                return new Attack("FireBall", 6, 25);
 
             case AbilityType.Teleport:
-                return new Ability("Teleport", 0, 0);
+                return new Heal("Cure", 0, 10);
 
             case AbilityType.TrickAttack:
-                return new Ability("Trick Attack", 0, 0);
+                return new Ability("Trick Attack", 5, 5);
 
             case AbilityType.Block:
-                return new Ability("Block", 0, 0);
+                return new Heal("Block", 0, 5);
 
             case AbilityType.WhirlWind:
-                return new Ability("Whirl Wind", 0, 0);
+                return new Attack("Whirl Wind", 8, 5);
 
             case AbilityType.Hex:
                 return new Ability("Tomb of Hex", 0, 0);
@@ -138,7 +139,6 @@ public class AbilityFactory
     }
 }
 
-
 public class Counter
 {
 
@@ -148,7 +148,6 @@ public class ActivateWhenReady
 {
 
 }
-
 
 public class Passive
 {
@@ -183,9 +182,69 @@ public class Ability
     protected string _Name;
 }
 
+public class Attack : Ability
+{
+    public void SetDmg(int value)
+    {
+        _Damage = value;
+    }
+
+    public Attack(string name, int range, int dmg) : base(name,range,dmg)
+    {
+
+    }
+
+    public override void Execute(UnitActionArgs args)
+    {
+        if(args.SelectedTile.GridPosition.x == args.Target.CurrentPosition.GridPosition.x  &&
+           args.SelectedTile.GridPosition.y == args.Target.CurrentPosition.GridPosition.y)
+        {
+            args.Actor.DoAttack(args.Target, _Damage + args.Actor.CombatModel.Attack);
+        }
+    }
+}
+
+public class Heal : Ability
+{
+    public void SetDmg(int value)
+    {
+        _Damage = value;
+    }
+
+    public Heal(string name, int range, int dmg) : base(name, range, dmg)
+    {
+
+    }
+
+    public override void Execute(UnitActionArgs args)
+    {
+        if (args.SelectedTile.GridPosition.x == args.Target.CurrentPosition.GridPosition.x &&
+           args.SelectedTile.GridPosition.y == args.Target.CurrentPosition.GridPosition.y)
+        {
+            args.Actor.DoHeal(args.Target, _Damage);
+        }
+    }
+}
+
+public class Teleport : Ability
+{
+    public Teleport(string name, int range, int dmg) : base(name, range, dmg)
+    {
+
+    }
+
+    public override void Execute(UnitActionArgs args)
+    {
+        if (!args.SelectedTile.IsOccupied)
+        {
+            args.Actor.DoMove(args.SelectedTile);
+        }
+    }
+}
+
 public class Move : Ability
 {
-    public Move(string name, int range, int attack) : base(name, range, attack)
+    public Move(string name, int range, int dmg) : base(name, range, dmg)
     {
 
     }
@@ -197,5 +256,27 @@ public class Move : Ability
             args.Actor.DoMove(args.SelectedTile);
         }
     }
+}
+
+public class PowerUp : Ability
+{
+    public PowerUp(string name, int range, int dmg) : base(name, range, dmg)
+    {
+
+    }
+
+    public override void Execute(UnitActionArgs args)
+    {
+        args.Actor.CombatModel.IncreaseAttack(1);
+    }
+}
+
+public class Cancel : Ability 
+{
+    public Cancel(string name, int range, int dmg) : base(name, range, dmg)
+    {
+
+    }
+
 }
 

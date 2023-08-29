@@ -21,6 +21,31 @@ namespace WTMK.Mechanics
 
         public List<GridUnit> Units;
 
+        public GridTile GetOpenTile()
+        {
+            bool hasTile = false;
+            GridTile tile = null;
+
+            while (!hasTile)
+            {
+                tile = GetRandomTilePos();
+                if (!tile.IsOccupied)
+                {
+                    hasTile = true; 
+                }
+            }
+
+            return tile;
+        }
+
+        public void Unselect()
+        {
+            for (int i = 0; i < _GridTiles.Count; i++)
+            {
+                _GridTiles[i].Refresh();
+            }
+        }
+
         public List<GridTile> GetAdjacentTiles(GridTile tile)
         {
             var tiles = new List<GridTile>();
@@ -30,6 +55,22 @@ namespace WTMK.Mechanics
                 if(_GridTiles[i].IsAdjacent(tile))
                 {
                     tiles.Add(_GridTiles[i]);
+                }
+            }
+
+            return tiles;
+        }
+
+        public List<GridTile> GetSelectableTiles(bool occupied, GridTile tile, int range)
+        {
+            var tiles = new List<GridTile>();
+
+            for (int i = 0; i < _GridTiles.Count; i++)
+            {
+                var target = _GridTiles[i];
+                if (tile.IsInRange(target, range) && tile.IsOccupied == occupied)
+                {
+                    tiles.Add(target);
                 }
             }
 
@@ -82,7 +123,6 @@ namespace WTMK.Mechanics
 
         private void OnTileSelected(GridTile sender)
         {
-            Debug.Log($"Clicked Tile ({sender.GridPosition.x} , {sender.GridPosition.y} ");
             TileSelected?.Invoke(sender);
         }
 

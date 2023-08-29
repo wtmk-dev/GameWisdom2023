@@ -22,14 +22,22 @@ public class CombatModel
 
     public int HP_MAX => _HP_MAX;
 
+    public void IncreaseAttack(int value)
+    {
+        _Attack += value;
+    }
+
     public CombatModel(int hp, float speed, int attack, int defense)
     {
         _HP_MAX = hp;
         _SPEED = speed;
         _Attack = attack;
         _Defense = defense;
+
+        CurrentHp = _HP_MAX;
     }
 
     private int _HP_MAX, _Attack, _Defense;
     private float _SPEED;
+
 }

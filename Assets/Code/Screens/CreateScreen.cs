@@ -17,10 +17,13 @@ public class CreateScreen : MonoBehaviour
     public Image BackgroundEffect;
     public GridUnit _War, _Thif, _Mage, _Necro;
     public Transform SelectedPosition;
-    public Button Complete;
+    public Button Complete, GoodEnd;
+    public EndScreen EndScreen;
+    public AudioSource _CreateAudio, _StartAudio;
 
     public void Init()
     {
+
         _War.OnSelected += (GridUnit unit) =>
         {
             OnClassSelected(0);
@@ -54,11 +57,21 @@ public class CreateScreen : MonoBehaviour
 
         Complete.onClick.AddListener(FinishCreation);
         Complete.gameObject.SetActive(false);
+
+        GoodEnd.onClick.AddListener(GoodEnding);
+        GoodEnd.gameObject.SetActive(false);
+    }
+
+    private void GoodEnding()
+    {
+        _CreateAudio.DOFade(0f, 0.3f);
+        EndScreen.GoodEnd();
     }
 
     public void StartTransition(GridUnit unit)
     {
         _Player = unit;
+        _StartAudio.DOFade(0f, 1f);
 
         Title.ShowText("{horiexp}<shake>Will the pain stop?</shake>{/horiexp}");        
         BackgroundEffect.DOFade(0f, 6f).SetEase(Ease.InOutBounce).OnComplete(() =>
@@ -71,21 +84,25 @@ public class CreateScreen : MonoBehaviour
     private GridUnit _Player;
     private IEnumerator DoTransition()
     {
+        WordSpawner.StartSpawn();
         Title.ShowText("{horiexp}<pend>You wouldn't want it to.</pend>{/horiexp}");
-        yield return new WaitForSeconds(0);
+        yield return new WaitForSeconds(_TransitonWaits[0]);
 
         BackgroundEffect.DOFade(.2f, 0f).SetEase(Ease.InOutBounce).OnComplete(() =>
         {
             Effect.gameObject.SetActive(true);
         });
-        yield return new WaitForSeconds(0f);
+        yield return new WaitForSeconds(_TransitonWaits[1]);
         StoryText.ShowText("{diagexp}<bounce>Amidst the remnants of the shattered reality, " +
             "three figures materialize—A battle-worn Warrior, a shadowy Thief, and an enigmatic Mage.</bounce>{/diagexp}");
-        yield return new WaitForSeconds(0f);
+        yield return new WaitForSeconds(_TransitonWaits[2]);
         CharacterSelection.SetActive(true);
-        WordSpawner.StartSpawn();
-        yield return new WaitForSeconds(0f);
+        
+        yield return new WaitForSeconds(_TransitonWaits[4]);
         Title.ShowText("{rdir}<incr>REMEMBER!?</incr>{/rdir}");
+
+        _CreateAudio.Play();
+        _CreateAudio.DOFade(1f, 0.6f);        
     }
 
     bool hasSelected;
@@ -243,11 +260,11 @@ public class CreateScreen : MonoBehaviour
             }
             else if (_Trials == 1)
             {
-                AddTomb(option);
+                //AddTomb(option);
             }
             else if (_Trials == 2)
             {
-                AddRune(option);
+                //AddRune(option);
             }
 
             ToggleSelection(false);
@@ -290,13 +307,17 @@ public class CreateScreen : MonoBehaviour
         StoryText.ShowText(_ProfileString);
         t.gameObject.SetActive(true);
         Complete.gameObject.SetActive(true);
+        GoodEnd.gameObject.SetActive(true);
         yield return null;
     }
 
     private void FinishCreation()
     {
+        _CreateAudio.DOFade(0f, 0.3f);
+
         t.gameObject.SetActive(false);
         Complete.gameObject.SetActive(false);
+        GoodEnd.gameObject.SetActive(false);
         TransitionReady = true;
     }
 
@@ -440,9 +461,9 @@ public class CreateScreen : MonoBehaviour
     private IEnumerator SequenceRoadToHellText()
     {
         StoryText.ShowText("{fade}With the echoes of your journey converging, you stand at the crossroads of destiny, poised on the precipice of the necromancer's castle—the final battlefield of your relentless pursuit. Yet, before the clash that will shape fate's tapestry, you encounter a blind seer whose gaze pierces the veil of reality.Their fingers bestow upon you an amulet—the Twin Phoenix Amulet—relic of a land untamed by the shackles of reality, where echoes of power and eternity intertwine. 'The amulet's heart beats with the rhythm of duality, ' the seer murmurs, 'twins in unity, fire and ash, life and death.");
-        yield return new WaitForSeconds(0f);
+        yield return new WaitForSeconds(22f);
         StoryText.ShowText("{fade}The amulet's weight is more than mere gold and gems—it carries the weight of ancient prophecies and forgotten truths. As your fingers touch its cool surface, you feel the heartbeat of two souls, twining like serpents of power. The seer's words linger, hinting at its connection to the looming battle and your own fate. Armed with the amulet's enigmatic power, you set forth, stepping into the shadow of the necromancer's castle, where reality and nightmares merge—a testament to the trials you've conquered and the choices that have shaped you.");
-        yield return new WaitForSeconds(0f);
+        yield return new WaitForSeconds(22f);
         _CreationStep.StateChange(CreationStep.DeathOfAHero);
     }
 
@@ -456,11 +477,11 @@ public class CreateScreen : MonoBehaviour
     private IEnumerator SequenceDeathOfAHero()
     {
         StoryText.ShowText("{fade}Stepping into the crypt's shadows, you venture deeper—a lone figure embracing destiny's call. The air grows heavy with the scent of ancient dust and the palpable tension of your purpose. Each step carries the weight of battles fought, choices made, and the ghosts of companions lost along the way. The echoes of your past resonate like the final notes of a symphony as you navigate the crypt's twists and turns, drawn ever closer to the heart of darkness.");
-        yield return new WaitForSeconds(0);
+        yield return new WaitForSeconds(24f);
         StoryText.ShowText("{fade}Torches flicker like fading stars, guiding you through the crypt's labyrinthine corridors. Unearthly whispers and the distant echoes of your own heartbeats create an eerie melody that accompanies your descent. At last, the crypt yields to a grand chamber—a nexus of arcane energy, cloaked in a shroud of ethereal mist. There, amidst a symphony of shadows, stands the necromancer, their power palpable, their intentions dark.");
-        yield return new WaitForSeconds(0);
+        yield return new WaitForSeconds(24f);
         StoryText.ShowText("{fade}The clash ensues—a dance of blades, incantations, and eldritch forces that reshape reality. With each strike, the necromancer's power and mastery over death become more evident. Yet, your resolve remains unbroken. As the battle rages on, the necromancer's dark magic begins to sap your strength. Wounds accumulate, and your movements grow sluggish. In the heart of the battle, the Twin Phoenix Amulet's ethereal glow intensifies, resonating with the rhythm of your struggle.");
-        yield return new WaitForSeconds(0);
+        yield return new WaitForSeconds(24f);
         StoryText.ShowText("{fade}As the weight of the amulet presses against your chest, an enigmatic power awakens within—the very power the blind seer spoke of. The amulet, a conduit between life and death, pulses with an energy you've never felt before. Its resonance mingles with your heartbeat, weaving a symphony that harmonizes with your very soul.");
 
         ToggleSelection(true);
